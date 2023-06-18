@@ -1,0 +1,2 @@
+# Wetterstation
+Wetterstation mit Django
