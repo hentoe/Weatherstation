@@ -1,2 +1,2 @@
-# Wetterstation
-Wetterstation mit Django
+# Weatherstation
+Weatherstation api build with Django
