@@ -24,6 +24,12 @@ DEBUG = bool(int(os.environ.get("DEBUG", 0)))
 ALLOWED_HOSTS = [] if DEBUG else os.environ.get(
     "DJANGO_ALLOWED_HOSTS").split(",")
 
+
+# CSRF Settings
+CSRF_TRUSTED_ORIGINS = ["https://" + host for host in ALLOWED_HOSTS]
+
+# Application definition
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
