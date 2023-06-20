@@ -1,2 +1,1 @@
-# Weatherstation
-Weatherstation api build with Django
+# Recipe-API-project
