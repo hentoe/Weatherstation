@@ -1,4 +1,4 @@
-FROM python:3.9-alpine3.13
+FROM python:3.11-alpine3.18
 LABEL maintainer="hentoe"
 
 # Environment variables
@@ -6,17 +6,17 @@ ENV PYTHONUNBUFFERED 1
 
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
+COPY ./scripts /scripts
 COPY ./app /app
 # Workdir: where commands like python manage.py test are run from
 WORKDIR /app
-EXPOSE 8000
 
 ARG DEV=false
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
-    apk add --update --no-cache postgresql-client && \
+    apk add --update --no-cache jpeg-dev libpq libssl3 && \
     apk add --update --no-cache --virtual .tmp-build-deps \
-        build-base postgresql-dev musl-dev && \
+        build-base postgresql-dev musl-dev zlib zlib-dev linux-headers libpq-dev python3-dev && \
     /py/bin/pip install -r /tmp/requirements.txt && \
     if [ $DEV = true ]; \
         then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
@@ -26,8 +26,11 @@ RUN python -m venv /py && \
     adduser \
         --disabled-password \
         --no-create-home \
-        django-user
+        django-user && \
+    chmod -R +x /scripts
 
-ENV PATH="/py/bin:$PATH"
+ENV PATH="/scripts:/py/bin:$PATH"
 
 USER django-user
+
+CMD ["run.sh"]
