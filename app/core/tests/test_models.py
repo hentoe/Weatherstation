@@ -4,6 +4,8 @@ Tests for models.
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
+from core import models
+
 
 def create_user(email="user@example.com", password="password1"):
     """Create and return a new user."""
@@ -51,3 +53,14 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_create_sensor(self):
+        """Test creating a sensor."""
+        user = create_user()
+        sensor = models.Sensor.objects.create(
+            user=user,
+            name="Temperature in Magrathea",
+            description="Sample description"
+        )
+
+        self.assertEqual(str(sensor), sensor.name)
