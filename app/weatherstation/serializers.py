@@ -11,3 +11,10 @@ class SensorSerializer(serializers.ModelSerializer):
         model = Sensor
         fields = ["id", "name"]
         read_only_fields = ["id"]
+
+
+class SensorDetailSerializer(SensorSerializer):
+    """Serializer for sensor detail view."""
+
+    class Meta(SensorSerializer.Meta):
+        fields = SensorSerializer.Meta.fields + ["description"]
