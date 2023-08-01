@@ -20,13 +20,13 @@ class SensorViewSet(viewsets.ModelViewSet):
         """Retrieve sensors for authenticated user."""
         return self.queryset.filter(user=self.request.user).order_by("-id")
 
-    def perform_create(self, serializer):
-        """Create a new sensor."""
-        serializer.save(user=self.request.user)
-
     def get_serializer_class(self):
         """Return the serializer class for request."""
         if self.action == "list":
             return serializers.SensorSerializer
 
         return self.serializer_class
+
+    def perform_create(self, serializer):
+        """Create a new sensor."""
+        serializer.save(user=self.request.user)
