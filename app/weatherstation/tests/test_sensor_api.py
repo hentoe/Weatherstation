@@ -17,15 +17,20 @@ SENSORS_URL = reverse("weatherstation:sensor-list")
 
 def create_sensor(user, **params):
     """Create and return a sample sensor"""
-    default = {
+    defaults = {
         "name": "Sample sensor name",
         "description": "Sample description",
     }
-    default.update(params)
+    defaults.update(params)
 
-    sensor = Sensor.objects.create(user=user, **default)
+    sensor = Sensor.objects.create(user=user, **defaults)
 
     return sensor
+
+
+def create_user(**params):
+    """Create and return a new user."""
+    return get_user_model().objects.create_user(**params)
 
 
 class PublicSensorAPITests(TestCase):
@@ -36,7 +41,7 @@ class PublicSensorAPITests(TestCase):
 
     def test_auth_required(self):
         """Test auth is required to call API."""
-        res = client.get(SENSORS_URL)
+        res = self.client.get(SENSORS_URL)
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -46,10 +51,7 @@ class PrivateSensorAPITests(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = self.get_user_model().objects.create(
-            user="user@example.com",
-            password="password1234"
-        )
+        self.user = create_user(email="user@example.com", password="testp1235")
         self.client.force_authenticate(self.user)
 
     def test_retrieve_sensors(self):
@@ -67,9 +69,9 @@ class PrivateSensorAPITests(TestCase):
 
     def test_sensor_list_limited_to_user(self):
         """Test list of sensors is limited to authenticated user."""
-        other_user = get_user_model().objects.create(
-            "other@example.com",
-            "password1234",
+        other_user = create_user(
+            email="other@example.com",
+            password="password1234",
         )
         create_sensor(user=other_user)
         create_sensor(user=self.user)
