@@ -20,7 +20,7 @@ SENSORS_URL = reverse("weatherstation:sensor-list")
 
 def detail_url(sensor_id):
     """Create and return a sensor detail URL."""
-    return reverse("sensor:sensor-detail", args=[sensor_id])
+    return reverse("weatherstation:sensor-detail", args=[sensor_id])
 
 
 def create_sensor(user, **params):
