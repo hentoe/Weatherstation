@@ -10,9 +10,17 @@ from rest_framework.test import APIClient
 
 from core.models import Sensor
 
-from weatherstation.serializers import SensorSerializer
+from weatherstation.serializers import (
+    SensorSerializer,
+    SensorDetailSerializer,
+)
 
 SENSORS_URL = reverse("weatherstation:sensor-list")
+
+
+def detail_url(sensor_id):
+    """Create and return a sensor detail URL."""
+    return reverse("sensor:sensor-detail", args=[sensor_id])
 
 
 def create_sensor(user, **params):
@@ -81,4 +89,14 @@ class PrivateSensorAPITests(TestCase):
         sensors = Sensor.objects.filter(user=self.user)
         serializer = SensorSerializer(sensors, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_get_sensor_detail(self):
+        """Test get sensor detail."""
+        sensor = create_sensor(user=self.user)
+
+        url = detail_url(sensor.id)
+        res = self.client.get(url)
+
+        serializer = SensorDetailSerializer(sensor)
         self.assertEqual(res.data, serializer.data)
