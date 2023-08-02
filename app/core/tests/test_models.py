@@ -76,7 +76,7 @@ class ModelTests(TestCase):
         )
         measurement = models.Measurement.objects.create(
             user=user,
-            sensor=sensor.id,
+            sensor=sensor,
             value=Decimal("24.5"),
         )
 
