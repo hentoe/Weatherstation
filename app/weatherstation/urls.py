@@ -1,5 +1,5 @@
 """
-URLs for the weatherstation app.
+URL mappings for the weatherstation app.
 """
 from django.urls import (
     include,
@@ -12,6 +12,7 @@ from weatherstation import views
 
 router = DefaultRouter()
 router.register("sensors", views.SensorViewSet)
+router.register("measurements", views.MeasurementViewSet)
 
 app_name = "weatherstation"
 

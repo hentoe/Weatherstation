@@ -1,7 +1,10 @@
 """Serializers for weatherstation APIs."""
 from rest_framework import serializers
 
-from core.models import Sensor
+from core.models import (
+    Sensor,
+    Measurement
+)
 
 
 class SensorSerializer(serializers.ModelSerializer):
@@ -18,3 +21,12 @@ class SensorDetailSerializer(SensorSerializer):
 
     class Meta(SensorSerializer.Meta):
         fields = SensorSerializer.Meta.fields + ["description"]
+
+
+class MeasurementSerializer(serializers.ModelSerializer):
+    """Serializer for Measurements."""
+
+    class Meta:
+        model = Measurement
+        fields = ["id", "timestamp", "value"]
+        read_only_fields = ["id", "timestamp"]
