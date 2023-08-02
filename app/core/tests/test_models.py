@@ -1,6 +1,8 @@
 """
 Tests for models.
 """
+from decimal import Decimal
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
@@ -64,3 +66,18 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(sensor), sensor.name)
+
+    def test_create_measurement(self):
+        """Test creating a measurement."""
+        user = create_user()
+        sensor = models.Sensor.objects.create(
+            user=user,
+            name="BME280",
+        )
+        measurement = models.Measurement.objects.create(
+            user=user,
+            sensor=sensor.id,
+            value=Decimal("24.5"),
+        )
+
+        self.assertEqual(measurement.user.id, user.id)
