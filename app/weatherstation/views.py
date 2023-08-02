@@ -52,3 +52,7 @@ class MeasurementViewSet(viewsets.ModelViewSet):
             return serializers.MeasurementSerializer
 
         return self.serializer_class
+
+    def perform_create(self, serializer):
+        """Create a new measurement."""
+        serializer.save(user=self.request.user)
