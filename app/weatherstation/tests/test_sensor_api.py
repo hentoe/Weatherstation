@@ -174,3 +174,15 @@ class PrivateSensorAPITests(TestCase):
         res = self.client.delete(url)
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_sensor_other_users_sensor_error(self):
+        """Test trying to delete another usiers recipe gives error."""
+        new_user = create_user(email="user2@example.com",
+                               password="alsdkfnalkösdfhj")
+        sensor = create_sensor(user=new_user)
+
+        url = detail_url(sensor.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(Sensor.objects.filter(id=sensor.id).exists())
