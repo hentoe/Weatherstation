@@ -26,7 +26,7 @@ def create_measurement(user, sensor, **params):
     }
     defaults.update(params)
 
-    measurement = Measurement.object.create(
+    measurement = Measurement.objects.create(
         user=user, sensor=sensor, **defaults)
     return measurement
 
@@ -67,6 +67,22 @@ class PrivateMeasurementAPITests(TestCase):
         res = self.client.get(MEASUREMENTS_URL)
 
         measurements = Measurement.objects.all().order_by("-id")
+        serializer = MeasurementSerializer(measurements, many=True)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_measurement_list_limited_to_user(self):
+        """Test list of measurements is limited to authenticated user."""
+        other_user = create_user(
+            email="user2@example.com", password="löaksdjfa")
+        other_sensor = create_sensor(user=other_user)
+        sensor = create_sensor(user=self.user)
+        create_measurement(user=other_user, sensor=other_sensor)
+        create_measurement(user=self.user, sensor=sensor)
+
+        res = self.client.get(MEASUREMENTS_URL)
+
+        measurements = Measurement.objects.filter(user=self.user)
         serializer = MeasurementSerializer(measurements, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
