@@ -78,9 +78,7 @@ class PrivateSensorAPITests(TestCase):
     def test_sensor_list_limited_to_user(self):
         """Test list of sensors is limited to authenticated user."""
         other_user = create_user(
-            email="other@example.com",
-            password="password1234",
-        )
+            email="other@example.com", password="password1234")
         create_sensor(user=other_user)
         create_sensor(user=self.user)
 
@@ -111,6 +109,46 @@ class PrivateSensorAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         sensor = Sensor.objects.get(id=res.data["id"])
+        for k, v in payload.items():
+            self.assertEqual(getattr(sensor, k), v)
+        self.assertEqual(sensor.user, self.user)
+
+    def test_partial_update(self):
+        """Test partial update of a sensor."""
+        original_description = "This is the original description"
+        sensor = create_sensor(
+            user=self.user,
+            name="Test Sensor",
+            description=original_description,
+        )
+
+        payload = {"name": "Temperature Sensor"}
+        url = detail_url(sensor.id)
+        res = self.client.patch(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        sensor.refresh_from_db()
+        self.assertEqual(sensor.name, payload["name"])
+        self.assertEqual(sensor.description, original_description)
+        self.assertEqual(sensor.user, self.user)
+
+    def test_full_update(self):
+        """Test full update of sensor."""
+        sensor = create_sensor(
+            user=self.user,
+            name="Test Sensor",
+            description="New Description",
+        )
+
+        payload = {
+            "name": "Temperature Sensor",
+        }
+
+        url = detail_url(sensor.id)
+        res = self.client.put(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        sensor.refresh_from_db()
         for k, v in payload.items():
             self.assertEqual(getattr(sensor, k), v)
         self.assertEqual(sensor.user, self.user)
