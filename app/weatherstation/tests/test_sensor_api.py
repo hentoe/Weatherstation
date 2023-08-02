@@ -152,3 +152,25 @@ class PrivateSensorAPITests(TestCase):
         for k, v in payload.items():
             self.assertEqual(getattr(sensor, k), v)
         self.assertEqual(sensor.user, self.user)
+
+    def test_update_user_returns_error(self):
+        """Test changing the sensor user results in an error."""
+        new_user = create_user(email="user2@example.com",
+                               password="sdklfjölohj")
+        sensor = create_sensor(user=self.user)
+
+        payload = {"user": new_user.id}
+        url = detail_url(sensor.id)
+        self.client.patch(url, payload)
+
+        sensor.refresh_from_db()
+        self.assertEqual(sensor.user, self.user)
+
+    def test_delete_sensor(self):
+        """Test deleting a sensor successful."""
+        sensor = create_sensor(user=self.user)
+
+        url = detail_url(sensor.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
