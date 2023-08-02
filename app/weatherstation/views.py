@@ -37,7 +37,7 @@ class SensorViewSet(viewsets.ModelViewSet):
 
 class MeasurementViewSet(viewsets.ModelViewSet):
     """View for managing measurement APIs."""
-    serializer_class = serializers.MeasurementSerializer
+    serializer_class = serializers.MeasurementDetailSerializer
     queryset = Measurement.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -45,3 +45,10 @@ class MeasurementViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Retrieve measurements for authenticated user."""
         return self.queryset.filter(user=self.request.user).order_by("-id")
+
+    def get_serializer_class(self):
+        """Return the serializer class for requests."""
+        if self.action == "list":
+            return serializers.MeasurementSerializer
+
+        return self.serializer_class

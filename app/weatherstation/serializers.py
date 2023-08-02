@@ -30,3 +30,10 @@ class MeasurementSerializer(serializers.ModelSerializer):
         model = Measurement
         fields = ["id", "timestamp", "value"]
         read_only_fields = ["id", "timestamp"]
+
+
+class MeasurementDetailSerializer(MeasurementSerializer):
+    """Serializer for measurement detail view."""
+
+    class Meta(MeasurementSerializer.Meta):
+        fields = MeasurementSerializer.Meta.fields + ["sensor"]
