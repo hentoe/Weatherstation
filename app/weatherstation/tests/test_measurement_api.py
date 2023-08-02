@@ -12,11 +12,19 @@ from rest_framework.test import APIClient
 
 from core.models import Measurement
 
-from weatherstation.serializers import MeasurementSerializer
+from weatherstation.serializers import (
+    MeasurementSerializer,
+    MeasurementDetailSerializer
+)
 from weatherstation.tests.test_sensor_api import create_sensor
 
 
 MEASUREMENTS_URL = reverse("weatherstation:measurement-list")
+
+
+def detail_url(measurement_id):
+    """Create and return a measurement detail URL."""
+    return reverse("weatherstation:measurement-detail", args=[measurement_id])
 
 
 def create_measurement(user, sensor, **params):
@@ -84,5 +92,17 @@ class PrivateMeasurementAPITests(TestCase):
 
         measurements = Measurement.objects.filter(user=self.user)
         serializer = MeasurementSerializer(measurements, many=True)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_get_measurement_detail(self):
+        """Test get measurement detail."""
+        sensor = create_sensor(user=self.user)
+        measurement = create_measurement(user=self.user, sensor=sensor)
+
+        url = detail_url(measurement.id)
+        res = self.client.get(url)
+
+        serializer = MeasurementDetailSerializer(measurement)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
