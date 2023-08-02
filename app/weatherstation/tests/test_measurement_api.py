@@ -106,3 +106,23 @@ class PrivateMeasurementAPITests(TestCase):
         serializer = MeasurementDetailSerializer(measurement)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
+
+    def test_create_measurement(self):
+        """Test creating a measurement."""
+        sensor = create_sensor(user=self.user)
+
+        payload = {
+            "value": Decimal("23.5"),
+            "sensor": sensor.id,
+        }
+        res = self.client.post(MEASUREMENTS_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        measurement = Measurement.objects.get(id=res.data["id"])
+        for k, v in payload.items():
+            if k == "sensor":
+                self.assertEqual(getattr(measurement, k).id, v)
+            else:
+                self.assertEqual(getattr(measurement, k), v)
+
+        self.assertEqual(measurement.user, self.user)
