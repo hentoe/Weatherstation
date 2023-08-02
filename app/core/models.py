@@ -69,4 +69,4 @@ class Measurement(models.Model):
     sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"Measurement {self.pk} - {self.timestamp} - {self.value} - {self.sensor}"
+        return f"{self.sensor} - {self.timestamp} - {self.value}"
