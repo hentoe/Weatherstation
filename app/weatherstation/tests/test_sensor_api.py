@@ -137,11 +137,12 @@ class PrivateSensorAPITests(TestCase):
         sensor = create_sensor(
             user=self.user,
             name="Test Sensor",
-            description="New Description",
+            description="Description",
         )
 
         payload = {
             "name": "Temperature Sensor",
+            "description": "New Description"
         }
 
         url = detail_url(sensor.id)
