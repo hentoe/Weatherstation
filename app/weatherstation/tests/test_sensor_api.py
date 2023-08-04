@@ -177,7 +177,7 @@ class PrivateSensorAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_sensor_other_users_sensor_error(self):
-        """Test trying to delete another usiers recipe gives error."""
+        """Test trying to delete another users recipe gives error."""
         new_user = create_user(email="user2@example.com",
                                password="alsdkfnalkösdfhj")
         sensor = create_sensor(user=new_user)
