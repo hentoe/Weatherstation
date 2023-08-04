@@ -81,3 +81,12 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(measurement.user.id, user.id)
+
+    def test_create_location(self):
+        """Test creating a location."""
+        user = create_user()
+        location = models.Location.objects.create(
+            user=user,
+            name="Magrathea"
+        )
+        self.assertEqual(str(location), location.name)
