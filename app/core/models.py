@@ -82,3 +82,16 @@ class Location(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class SensorType(models.Model):
+    """Sensor Type object."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=255)
+    unit = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
