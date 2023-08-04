@@ -126,3 +126,84 @@ class PrivateMeasurementAPITests(TestCase):
                 self.assertEqual(getattr(measurement, k), v)
 
         self.assertEqual(measurement.user, self.user)
+
+    def test_partial_update(self):
+        """Test partial update of a measurement."""
+        original_value = Decimal("15.0")
+        sensor = create_sensor(user=self.user)
+        measurement = create_measurement(
+            user=self.user,
+            sensor=create_sensor(user=self.user),
+            value=original_value
+        )
+
+        payload = {"sensor": sensor.id}
+        url = detail_url(measurement.id)
+        res = self.client.patch(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        measurement.refresh_from_db()
+        self.assertEqual(measurement.sensor.id, payload["sensor"])
+        self.assertEqual(measurement.value, original_value)
+        self.assertEqual(measurement.user, self.user)
+
+    def test_full_update(self):
+        """Test full update of a measurement."""
+        sensor = create_sensor(
+            user=self.user,
+            name="Test Sensor",
+            description="New Description",
+        )
+        measurement = create_measurement(
+            user=self.user,
+            sensor=create_sensor(user=self.user))
+
+        payload = {
+            "value": Decimal("-1.23"),
+            "sensor": sensor.id
+        }
+
+        url = detail_url(measurement.id)
+        res = self.client.put(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        measurement.refresh_from_db()
+        for k, v in payload.items():
+            if k == "sensor":
+                self.assertEqual(getattr(measurement, k).id, v)
+            else:
+                self.assertEqual(getattr(measurement, k), v)
+        self.assertEqual(measurement.user, self.user)
+
+    def test_update_user_returns_error(self):
+        """Test changing the measurement user results in an error."""
+        new_user = create_user(email="user2@example.com",
+                               password="sdklfjölohj")
+        sensor = create_sensor(user=self.user)
+        measurement = create_measurement(user=self.user, sensor=sensor)
+
+        payload = {"user": new_user.id}
+        url = detail_url(measurement.id)
+        self.client.patch(url, payload)
+        measurement.refresh_from_db()
+        self.assertEqual(measurement.user, self.user)
+
+    def test_update_sensor_by_other_user_returns_error(self):
+        """
+        Test changing the measurement sensor to another users sensor
+        results in an error.
+        """
+        new_user = create_user(email="user2@example.com",
+                               password="sdklfjölohj")
+        sensor = create_sensor(user=self.user)
+        wrong_sensor = create_sensor(user=new_user, name="Wrong Sensor")
+        measurement = create_measurement(user=self.user, sensor=sensor)
+
+        payload = {
+            "sensor": wrong_sensor.id,
+        }
+        url = detail_url(measurement.id)
+        res = self.client.patch(url, payload)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        measurement.refresh_from_db()
+        self.assertEqual(measurement.sensor, sensor)
