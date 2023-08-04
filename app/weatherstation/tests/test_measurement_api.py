@@ -224,3 +224,26 @@ class PrivateMeasurementAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         measurement.refresh_from_db()
         self.assertEqual(measurement.user, new_user)
+
+    def test_delete_measurement(self):
+        """Test deleting a measurement successful."""
+        sensor = create_sensor(user=self.user)
+        measurement = create_measurement(user=self.user, sensor=sensor)
+
+        url = detail_url(measurement.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_measurement_other_users_measurement_error(self):
+        """Test trying to delete another users measurement gives error."""
+        new_user = create_user(email="user2@example.com",
+                               password="sdklfjölohj")
+        sensor = create_sensor(user=new_user)
+        measurement = create_measurement(user=new_user, sensor=sensor)
+
+        url = detail_url(measurement.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(Measurement.objects.filter(id=measurement.id).exists())
