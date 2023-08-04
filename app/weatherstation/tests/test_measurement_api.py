@@ -247,3 +247,22 @@ class PrivateMeasurementAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Measurement.objects.filter(id=measurement.id).exists())
+
+    def test_filter_by_sensors(self):
+        """Test filtering measurements by sensors."""
+        s1 = create_sensor(user=self.user)
+        s2 = create_sensor(user=self.user)
+        s3 = create_sensor(user=self.user)
+        m1 = create_measurement(user=self.user, sensor=s1)
+        m2 = create_measurement(user=self.user, sensor=s2)
+        m3 = create_measurement(user=self.user, sensor=s3)
+
+        params = {"sensors": f"{s1.id},{s2.id}"}
+        res = self.client.get(MEASUREMENTS_URL, params)
+
+        sm1 = MeasurementSerializer(m1)
+        sm2 = MeasurementSerializer(m2)
+        sm3 = MeasurementSerializer(m3)
+        self.assertIn(sm1.data, res.data)
+        self.assertIn(sm2.data, res.data)
+        self.assertNotIn(sm3.data, res.data)
