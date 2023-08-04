@@ -90,3 +90,13 @@ class ModelTests(TestCase):
             name="Magrathea"
         )
         self.assertEqual(str(location), location.name)
+
+    def test_create_sensor_type(self):
+        """Test creating a sensor type."""
+        user = create_user()
+        sensor_type = models.SensorType.objects.create(
+            user=user,
+            name="Temperature",
+            unit="Celsius"
+        )
+        self.assertEqual(str(sensor_type), sensor_type.name)
