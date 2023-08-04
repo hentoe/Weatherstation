@@ -188,7 +188,7 @@ class PrivateMeasurementAPITests(TestCase):
         measurement.refresh_from_db()
         self.assertEqual(measurement.user, self.user)
 
-    def test_update_sensor_by_other_user_returns_error(self):
+    def test_update_with_other_users_sensor_returns_error(self):
         """
         Test changing the measurement sensor to another users sensor
         results in an error.
@@ -204,6 +204,23 @@ class PrivateMeasurementAPITests(TestCase):
         }
         url = detail_url(measurement.id)
         res = self.client.patch(url, payload)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         measurement.refresh_from_db()
         self.assertEqual(measurement.sensor, sensor)
+
+    def test_update_other_users_measurement_returns_error(self):
+        """Test updating another users measurement returns an error."""
+        new_user = create_user(email="user2@example.com",
+                               password="sdklfjölohj")
+        sensor = create_sensor(user=new_user)
+        measurement = create_measurement(user=new_user, sensor=sensor)
+
+        payload = {
+            "value": Decimal("3.14")
+        }
+        url = detail_url(measurement.id)
+
+        res = self.client.patch(url, payload)
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        measurement.refresh_from_db()
+        self.assertEqual(measurement.user, new_user)
