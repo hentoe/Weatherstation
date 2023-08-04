@@ -1,9 +1,10 @@
 """
 Views for the weatherstation APIs.
 """
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from core.models import (
     Sensor,
@@ -56,3 +57,20 @@ class MeasurementViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Create a new measurement."""
         serializer.save(user=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        """Update a measurement."""
+        for k, v in request.data.items():
+            if k == "sensor":
+                try:
+                    sensor = Sensor.objects.get(id=v)
+                except Sensor.DoesNotExist:
+                    return Response(
+                        f"Invalid pk \"{v}\" - Object does not exist.",
+                        status.HTTP_400_BAD_REQUEST)
+                if sensor.user != request.user:
+                    return Response(
+                        f"Invalid pk \"{v}\" - Object does not exist.",
+                        status.HTTP_400_BAD_REQUEST)
+
+        return super().update(request, *args, **kwargs)
