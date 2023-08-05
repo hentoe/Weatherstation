@@ -46,3 +46,5 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Sensor)
 admin.site.register(models.Measurement)
+admin.site.register(models.Location)
+admin.site.register(models.SensorType)
