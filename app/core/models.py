@@ -64,7 +64,7 @@ class SensorType(models.Model):
         on_delete=models.CASCADE
     )
     name = models.CharField(max_length=255)
-    unit = models.CharField(max_length=255)
+    unit = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.name
