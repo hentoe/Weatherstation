@@ -110,7 +110,9 @@ class MeasurementViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
 
-class BaseSensorAttrViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class BaseSensorAttrViewSet(mixins.ListModelMixin,
+                            mixins.CreateModelMixin,
+                            viewsets.GenericViewSet):
     """Manage sensor types."""
 
     authentication_classes = [TokenAuthentication]
@@ -119,6 +121,10 @@ class BaseSensorAttrViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def get_queryset(self):
         """Filter queryset to authenticated user."""
         return self.queryset.filter(user=self.request.user).order_by("-name")
+
+    def perform_create(self, serializer):
+        """Create a new measurement."""
+        serializer.save(user=self.request.user)
 
 
 class SensorTypeViewSet(BaseSensorAttrViewSet):
