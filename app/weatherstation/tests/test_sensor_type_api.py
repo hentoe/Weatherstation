@@ -12,7 +12,7 @@ from core.models import SensorType
 
 from weatherstation.serializers import SensorTypeSerializer
 
-SENSOR_TYPE_URL = reverse("weatherstation:sensor_type-list")
+SENSOR_TYPE_URL = reverse("weatherstation:sensortype-list")
 
 
 def create_user(**params):
