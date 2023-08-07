@@ -110,25 +110,24 @@ class MeasurementViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
 
-class SensorTypeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class BaseSensorAttrViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """Manage sensor types."""
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Filter queryset to authenticated user."""
+        return self.queryset.filter(user=self.request.user).order_by("-name")
+
+
+class SensorTypeViewSet(BaseSensorAttrViewSet):
     """Manage sensor types."""
     serializer_class = serializers.SensorTypeSerializer
     queryset = SensorType.objects.all()
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        """Filter queryset to authenticated user."""
-        return self.queryset.filter(user=self.request.user).order_by("-name")
 
 
-class LocationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class LocationViewSet(BaseSensorAttrViewSet):
     """Manage locations."""
     serializer_class = serializers.LocationSerializer
     queryset = Location.objects.all()
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        """Filter queryset to authenticated user."""
-        return self.queryset.filter(user=self.request.user).order_by("-name")
