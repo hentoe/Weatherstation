@@ -235,7 +235,7 @@ class PrivateMeasurementAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
-    def test_measurement_other_users_measurement_error(self):
+    def test_delete_other_users_measurement_error(self):
         """Test trying to delete another users measurement gives error."""
         new_user = create_user(email="user2@example.com",
                                password="sdklfjölohj")
