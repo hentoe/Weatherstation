@@ -15,6 +15,11 @@ from weatherstation.serializers import LocationSerializer
 LOCATION_URL = reverse("weatherstation:location-list")
 
 
+def detail_url(location_id):
+    """Create and return a location detail URL."""
+    return reverse("weatherstation:location-detail", args=[location_id])
+
+
 def create_user(**params):
     """Create and return a new user."""
     return get_user_model().objects.create_user(**params)
@@ -67,3 +72,17 @@ class PrivateLocationApiTests(TestCase):
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data[0]["name"], location.name)
         self.assertEqual(res.data[0]["id"], location.id)
+
+    def test_create_location(self):
+        """Test creating a location."""
+        payload = {
+            "name": "Basement",
+        }
+        res = self.client.post(LOCATION_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        location = Location.objects.get(id=res.data["id"])
+        for k, v in payload.items():
+            self.assertEqual(getattr(location, k), v)
+        self.assertEqual(location.user, self.user)

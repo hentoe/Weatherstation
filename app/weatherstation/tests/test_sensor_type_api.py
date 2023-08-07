@@ -15,6 +15,11 @@ from weatherstation.serializers import SensorTypeSerializer
 SENSOR_TYPE_URL = reverse("weatherstation:sensortype-list")
 
 
+def detail_url(sensor_type_id):
+    """Create and return a sensor type detail URL."""
+    return reverse("weatherstation:sensortype-detail", args=[sensor_type_id])
+
+
 def create_user(**params):
     """Create and return a new user."""
     return get_user_model().objects.create_user(**params)
@@ -67,3 +72,18 @@ class PrivateSensorTypeApiTests(TestCase):
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data[0]["name"], sensor_type.name)
         self.assertEqual(res.data[0]["id"], sensor_type.id)
+
+    def test_create_sensor_type(self):
+        """Test creating a sensor type."""
+        payload = {
+            "name": "Temperature",
+            "unit": "°C",
+        }
+        res = self.client.post(SENSOR_TYPE_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        sensor_type = SensorType.objects.get(id=res.data["id"])
+        for k, v in payload.items():
+            self.assertEqual(getattr(sensor_type, k), v)
+        self.assertEqual(sensor_type.user, self.user)
