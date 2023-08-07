@@ -144,3 +144,24 @@ class PrivateSensorTypeApiTests(TestCase):
 
         sensor_type.refresh_from_db()
         self.assertEqual(sensor_type.user, self.user)
+
+    def test_delete_sensor_type(self):
+        """Test deleting a sensor type."""
+        sensor_type = create_sensor_type(user=self.user)
+
+        url = detail_url(sensor_type.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_other_users_sensor_type_error(self):
+        """Test trying to delete another users sensor type gives error."""
+        new_user = create_user(email="user2@example.com",
+                               password="alsdkfnalkösdfhj")
+        sensor_type = create_sensor_type(user=new_user)
+
+        url = detail_url(sensor_type.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(SensorType.objects.filter(id=sensor_type.id).exists())
