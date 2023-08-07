@@ -2,8 +2,10 @@
 from rest_framework import serializers
 
 from core.models import (
+    Location,
+    Measurement,
     Sensor,
-    Measurement
+    SensorType,
 )
 
 
@@ -37,3 +39,12 @@ class MeasurementDetailSerializer(MeasurementSerializer):
 
     class Meta(MeasurementSerializer.Meta):
         fields = MeasurementSerializer.Meta.fields + ["sensor"]
+
+
+class SensorTypeSerializer(serializers.ModelSerializer):
+    """Serializer for SensorTypes."""
+
+    class Meta:
+        model = SensorType
+        fields = ["id", "name", "unit"]
+        read_only_fields = ["id"]

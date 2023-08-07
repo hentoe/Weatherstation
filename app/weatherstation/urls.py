@@ -13,6 +13,7 @@ from weatherstation import views
 router = DefaultRouter()
 router.register("sensors", views.SensorViewSet)
 router.register("measurements", views.MeasurementViewSet)
+router.register("sensor_types", views.SensorTypeViewSet)
 
 app_name = "weatherstation"
 
