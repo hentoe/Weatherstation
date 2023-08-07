@@ -20,6 +20,16 @@ def detail_url(location_id):
     return reverse("weatherstation:location-detail", args=[location_id])
 
 
+def create_location(user, **params):
+    """Create and return a sample location."""
+    defaults = {"name": "Basement"}
+    defaults.update(params)
+
+    location = Location.objects.create(user=user, **defaults)
+
+    return location
+
+
 def create_user(**params):
     """Create and return a new user."""
     return get_user_model().objects.create_user(**params)
@@ -48,8 +58,8 @@ class PrivateLocationApiTests(TestCase):
 
     def test_retrieve_locations(self):
         """Test retrieving a list of locations."""
-        Location.objects.create(user=self.user, name="Living Room")
-        Location.objects.create(user=self.user, name="Temperature")
+        create_location(user=self.user, name="Living Room")
+        create_location(user=self.user)
 
         res = self.client.get(LOCATION_URL)
 
@@ -62,9 +72,8 @@ class PrivateLocationApiTests(TestCase):
     def test_sensor_types_limited_to_user(self):
         """Test list of sensor types is limited to authenticated user."""
         user2 = create_user(email="user2@example.com", password="asdfasdf")
-        Location.objects.create(user=user2, name="Humidity")
-        location = Location.objects.create(
-            user=self.user, name="Temperature")
+        create_location(user=user2, name="Bathroom")
+        location = create_location(user=self.user, name="Pool")
 
         res = self.client.get(LOCATION_URL)
 
@@ -85,4 +94,42 @@ class PrivateLocationApiTests(TestCase):
         location = Location.objects.get(id=res.data["id"])
         for k, v in payload.items():
             self.assertEqual(getattr(location, k), v)
+        self.assertEqual(location.user, self.user)
+
+    def test_partial_update_location(self):
+        """Test partial update of a location."""
+        location = create_location(user=self.user)
+
+        payload = {"name": "Room 404"}
+
+        url = detail_url(location.id)
+        res = self.client.patch(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        location.refresh_from_db()
+        self.assertEqual(location.name, payload["name"])
+
+    def test_full_update_location(self):
+        """Test full update of a location."""
+        location = create_location(user=self.user)
+
+        payload = {"name": "Room 404"}
+
+        url = detail_url(location.id)
+        res = self.client.put(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        location.refresh_from_db()
+        self.assertEqual(location.name, payload["name"])
+
+    def test_update_user_returns_error(self):
+        """Test try changing the user of a location does not change user."""
+        new_user = create_user(email="user2@example.com", password="sdklfjohj")
+        location = create_location(user=self.user)
+
+        payload = {"user": new_user.id}
+        url = detail_url(location.id)
+        self.client.patch(url, payload)
+
+        location.refresh_from_db()
         self.assertEqual(location.user, self.user)
