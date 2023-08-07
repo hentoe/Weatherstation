@@ -48,3 +48,12 @@ class SensorTypeSerializer(serializers.ModelSerializer):
         model = SensorType
         fields = ["id", "name", "unit"]
         read_only_fields = ["id"]
+
+
+class LocationSerializer(serializers.ModelSerializer):
+    """Serializer for Locations."""
+
+    class Meta:
+        model = Location
+        fields = ["id", "name"]
+        read_only_fields = ["id"]

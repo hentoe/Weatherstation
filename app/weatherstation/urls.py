@@ -14,6 +14,7 @@ router = DefaultRouter()
 router.register("sensors", views.SensorViewSet)
 router.register("measurements", views.MeasurementViewSet)
 router.register("sensor_types", views.SensorTypeViewSet)
+router.register("locations", views.LocationViewSet)
 
 app_name = "weatherstation"
 

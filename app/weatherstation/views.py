@@ -17,6 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from core.models import (
+    Location,
     Measurement,
     Sensor,
     SensorType
@@ -113,6 +114,18 @@ class SensorTypeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """Manage sensor types."""
     serializer_class = serializers.SensorTypeSerializer
     queryset = SensorType.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Filter queryset to authenticated user."""
+        return self.queryset.filter(user=self.request.user).order_by("-name")
+
+
+class LocationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """Manage locations."""
+    serializer_class = serializers.LocationSerializer
+    queryset = Location.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
