@@ -113,6 +113,7 @@ class MeasurementViewSet(viewsets.ModelViewSet):
 class BaseSensorAttrViewSet(mixins.ListModelMixin,
                             mixins.CreateModelMixin,
                             mixins.UpdateModelMixin,
+                            mixins.DestroyModelMixin,
                             viewsets.GenericViewSet):
     """Manage sensor types."""
 
