@@ -7,6 +7,7 @@ from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.timezone import make_aware
 
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -29,7 +30,7 @@ def detail_url(measurement_id):
 
 
 def create_measurement(user, sensor, **params):
-    """Create and return a sample measurement"""
+    """Create and return a sample measurement."""
     defaults = {
         "value": Decimal("24"),
     }
@@ -38,6 +39,22 @@ def create_measurement(user, sensor, **params):
     measurement = Measurement.objects.create(
         user=user, sensor=sensor, **defaults)
     return measurement
+
+
+def create_measurements(user, days=10):
+    """Create and return a list of measurements."""
+    s1 = create_sensor(user=user)
+    date = make_aware(datetime.now())
+    measurements = []
+    for day in range(days):
+        m = create_measurement(
+            user=user,
+            sensor=s1,
+            value=day,
+            timestamp=date - timedelta(days=days-day)
+        )
+        measurements.append(m)
+    return measurements
 
 
 def create_user(**params):
@@ -269,18 +286,8 @@ class PrivateMeasurementAPITests(TestCase):
         self.assertNotIn(sm3.data, res.data)
 
     def test_filter_by_start_date(self):
-        s1 = create_sensor(user=self.user)
-        date = datetime.now()
-        days = 10
-        measurements = []
-        for day in range(days):
-            m = create_measurement(user=self.user, sensor=s1, value=day)
-            m.timestamp = date - timedelta(days=days-day)
-            m.save()
-            measurements.append(m)
-
-        self.assertTrue(len(measurements) == 10)
-
+        measurements = create_measurements(user=self.user)
+        date = measurements[-1].timestamp
         start_date = date - timedelta(days=5)
 
         params = {"start_date": start_date.strftime("%Y-%m-%d")}
@@ -296,17 +303,8 @@ class PrivateMeasurementAPITests(TestCase):
                     measurement).data, res.data)
 
     def test_filter_by_end_date(self):
-        s1 = create_sensor(user=self.user)
-        date = datetime.now()
-        days = 10
-        measurements = []
-        for day in range(days):
-            m = create_measurement(user=self.user, sensor=s1, value=day)
-            m.timestamp = date - timedelta(days=days-day)
-            m.save()
-            measurements.append(m)
-
-        self.assertTrue(len(measurements) == 10)
+        measurements = create_measurements(user=self.user)
+        date = measurements[-1].timestamp
 
         end_date = date - timedelta(days=5)
 
@@ -323,17 +321,8 @@ class PrivateMeasurementAPITests(TestCase):
                     measurement).data, res.data)
 
     def test_filter_by_date(self):
-        s1 = create_sensor(user=self.user)
-        date = datetime.now()
-        days = 10
-        measurements = []
-        for day in range(days):
-            m = create_measurement(user=self.user, sensor=s1, value=day)
-            m.timestamp = date - timedelta(days=days-day)
-            m.save()
-            measurements.append(m)
-
-        self.assertTrue(len(measurements) == 10)
+        measurements = create_measurements(user=self.user)
+        date = measurements[-1].timestamp
 
         start_date = date - timedelta(days=3)
         end_date = date - timedelta(days=6)
