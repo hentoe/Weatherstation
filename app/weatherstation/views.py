@@ -87,6 +87,16 @@ class SensorViewSet(viewsets.ModelViewSet):
                 "sensors",
                 OpenApiTypes.STR,
                 description="Comma separated list of sensor IDs to filter",
+            ),
+            OpenApiParameter(
+                "start_date",
+                OpenApiTypes.DATE,
+                description="Start timestamp for filtering",
+            ),
+            OpenApiParameter(
+                "end_date",
+                OpenApiTypes.DATE,
+                description="End timestamp for filtering",
             )
         ]
     )
@@ -105,10 +115,21 @@ class MeasurementViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Retrieve measurements for authenticated user."""
         sensors = self.request.query_params.get("sensors")
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+
         queryset = self.queryset
+
         if sensors:
             sensor_ids = self._params_to_ints(sensors)
             queryset = queryset.filter(sensor__id__in=sensor_ids)
+
+        if start_date:
+            queryset = queryset.filter(timestamp__gte=start_date)
+
+        if end_date:
+            queryset = queryset.filter(timestamp__lte=end_date)
+
         return queryset.filter(
             user=self.request.user
         ).order_by("-id").distinct()
