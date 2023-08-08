@@ -30,10 +30,11 @@ class LocationSerializer(serializers.ModelSerializer):
 class SensorSerializer(serializers.ModelSerializer):
     """Serializer for sensors."""
     sensor_type = SensorTypeSerializer(required=False)
+    location = LocationSerializer(required=False)
 
     class Meta:
         model = Sensor
-        fields = ["id", "name", "sensor_type"]
+        fields = ["id", "name", "sensor_type", "location"]
         read_only_fields = ["id"]
 
     def _get_or_create_sensor_type(self, sensor_type, sensor):
@@ -46,11 +47,23 @@ class SensorSerializer(serializers.ModelSerializer):
             )
             sensor.sensor_type = sensor_type_obj
 
+    def _get_or_create_location(self, location, sensor):
+        """Handle getting or creating a location."""
+        auth_user = self.context["request"].user
+        if location:
+            location_obj, created = Location.objects.get_or_create(
+                user=auth_user,
+                **location
+            )
+            sensor.location = location_obj
+
     def create(self, validated_data):
         """Create a sensor."""
         sensor_type = validated_data.pop("sensor_type", None)
+        location = validated_data.pop("location", None)
         sensor = Sensor.objects.create(**validated_data)
         self._get_or_create_sensor_type(sensor_type, sensor)
+        self._get_or_create_location(location, sensor)
 
         sensor.save()
         return sensor
