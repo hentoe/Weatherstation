@@ -8,7 +8,11 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Sensor
+from core.models import (
+    Location,
+    Sensor,
+    SensorType
+)
 
 from weatherstation.serializers import (
     SensorSerializer,
@@ -187,3 +191,72 @@ class PrivateSensorAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Sensor.objects.filter(id=sensor.id).exists())
+
+    def test_create_sensor_with_new_type(self):
+        """Test creating a sensor with a new sensor type."""
+        payload = {
+            "name": "BME280",
+            "description": "Sample description",
+            "sensor_type": {"name": "Temperature", "unit": "°C"},
+        }
+        res = self.client.post(SENSORS_URL, payload, format="json")
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        sensors = Sensor.objects.filter(user=self.user)
+        sensor = sensors[0]
+        self.assertEqual(sensor.sensor_type.name,
+                         payload["sensor_type"]["name"])
+
+    def test_create_sensor_with_existing_type(self):
+        """Test creating a sensor with existing sensor type."""
+        sensor_type = SensorType.objects.create(
+            user=self.user,
+            name="Temperature",
+            unit="°C"
+        )
+        payload = {
+            "name": "BME280",
+            "description": "Sample description",
+            "sensor_type": {"name": "Temperature", "unit": "°C"}
+        }
+        res = self.client.post(SENSORS_URL, payload, format="json")
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        sensors = Sensor.objects.filter(user=self.user)
+        self.assertEqual(sensors.count(), 1)
+        sensor = sensors[0]
+        self.assertEqual(sensor_type, sensor.sensor_type)
+
+    def test_create_sensor_with_new_location(self):
+        """Test creating a sensor with a new location."""
+        payload = {
+            "name": "BME280",
+            "description": "Sample description",
+            "location": {"name": "Garden"},
+        }
+        res = self.client.post(SENSORS_URL, payload, format="json")
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        sensors = Sensor.objects.filter(user=self.user)
+        sensor = sensors[0]
+        self.assertEqual(sensor.location.name,
+                         payload["location"]["name"])
+
+    def test_create_sensor_with_existing_location(self):
+        """Test creating a sensor with existing location."""
+        location = Location.objects.create(
+            user=self.user,
+            name="Garage"
+        )
+        payload = {
+            "name": "BME280",
+            "description": "Sample description",
+            "location": {"name": "Garage"},
+        }
+        res = self.client.post(SENSORS_URL, payload, format="json")
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        sensors = Sensor.objects.filter(user=self.user)
+        self.assertEqual(sensors.count(), 1)
+        sensor = sensors[0]
+        self.assertEqual(location, sensor.location)
