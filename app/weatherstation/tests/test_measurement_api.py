@@ -1,6 +1,7 @@
 """
 Tests for measurement APIs.
 """
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
@@ -266,3 +267,91 @@ class PrivateMeasurementAPITests(TestCase):
         self.assertIn(sm1.data, res.data)
         self.assertIn(sm2.data, res.data)
         self.assertNotIn(sm3.data, res.data)
+
+    def test_filter_by_start_date(self):
+        s1 = create_sensor(user=self.user)
+        date = datetime.now()
+        days = 10
+        measurements = []
+        for day in range(days):
+            m = create_measurement(user=self.user, sensor=s1, value=day)
+            m.timestamp = date - timedelta(days=days-day)
+            m.save()
+            measurements.append(m)
+
+        self.assertTrue(len(measurements) == 10)
+
+        start_date = date - timedelta(days=5)
+
+        params = {"start_date": start_date.strftime("%Y-%m-%d")}
+        res = self.client.get(MEASUREMENTS_URL, params)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        for measurement in measurements:
+            if measurement.timestamp < start_date:
+                self.assertNotIn(MeasurementSerializer(
+                    measurement).data, res.data)
+            else:
+                self.assertIn(MeasurementSerializer(
+                    measurement).data, res.data)
+
+    def test_filter_by_end_date(self):
+        s1 = create_sensor(user=self.user)
+        date = datetime.now()
+        days = 10
+        measurements = []
+        for day in range(days):
+            m = create_measurement(user=self.user, sensor=s1, value=day)
+            m.timestamp = date - timedelta(days=days-day)
+            m.save()
+            measurements.append(m)
+
+        self.assertTrue(len(measurements) == 10)
+
+        end_date = date - timedelta(days=5)
+
+        params = {"end_date": end_date.strftime("%Y-%m-%d")}
+        res = self.client.get(MEASUREMENTS_URL, params)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        for measurement in measurements:
+            if measurement.timestamp < end_date:
+                self.assertIn(MeasurementSerializer(
+                    measurement).data, res.data)
+            else:
+                self.assertNotIn(MeasurementSerializer(
+                    measurement).data, res.data)
+
+    def test_filter_by_date(self):
+        s1 = create_sensor(user=self.user)
+        date = datetime.now()
+        days = 10
+        measurements = []
+        for day in range(days):
+            m = create_measurement(user=self.user, sensor=s1, value=day)
+            m.timestamp = date - timedelta(days=days-day)
+            m.save()
+            measurements.append(m)
+
+        self.assertTrue(len(measurements) == 10)
+
+        start_date = date - timedelta(days=3)
+        end_date = date - timedelta(days=6)
+
+        params = {
+            "start_date": start_date.strftime("%Y-%m-%d"),
+            "end_date": end_date.strftime("%Y-%m-%d")
+        }
+        res = self.client.get(MEASUREMENTS_URL, params)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        for measurement in measurements:
+            if measurement.timestamp < start_date:
+                self.assertNotIn(MeasurementSerializer(
+                    measurement).data, res.data)
+            elif measurement.timestamp < end_date:
+                self.assertIn(MeasurementSerializer(
+                    measurement).data, res.data)
+            else:
+                self.assertNotIn(MeasurementSerializer(
+                    measurement).data, res.data)
