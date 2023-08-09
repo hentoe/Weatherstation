@@ -169,6 +169,17 @@ class MeasurementViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
 
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "assigned_only",
+                OpenApiTypes.INT, enum=[0, 1],
+                description="Filter by items assigned to sensors.",
+            )
+        ]
+    )
+)
 class BaseSensorAttrViewSet(mixins.ListModelMixin,
                             mixins.CreateModelMixin,
                             mixins.UpdateModelMixin,
@@ -181,7 +192,15 @@ class BaseSensorAttrViewSet(mixins.ListModelMixin,
 
     def get_queryset(self):
         """Filter queryset to authenticated user."""
-        return self.queryset.filter(user=self.request.user).order_by("-name")
+        assigned_only = bool(
+            int(self.request.query_params.get("assigned_only", 0))
+        )
+        queryset = self.queryset
+        if assigned_only:
+            queryset = queryset.filter(sensor__isnull=False)
+        return queryset.filter(
+            user=self.request.user
+        ).order_by("-name").distinct()
 
     def perform_create(self, serializer):
         """Create a new measurement."""
