@@ -8,7 +8,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import SensorType
+from core.models import SensorType, Sensor
 
 from weatherstation.serializers import SensorTypeSerializer
 
@@ -165,3 +165,28 @@ class PrivateSensorTypeApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(SensorType.objects.filter(id=sensor_type.id).exists())
+
+    def test_filter_sensor_types_assigned_to_sensors(self):
+        """Test listing sensor types by those assigned to sensors."""
+        sensor_type1 = create_sensor_type(user=self.user)
+        sensor_type2 = create_sensor_type(user=self.user, name="Attic")
+
+        Sensor.objects.create(user=self.user, sensor_type=sensor_type1)
+
+        res = self.client.get(SENSOR_TYPE_URL, {"assigned_only": 1})
+
+        s1 = SensorTypeSerializer(sensor_type1)
+        s2 = SensorTypeSerializer(sensor_type2)
+        self.assertIn(s1.data, res.data)
+        self.assertNotIn(s2.data, res.data)
+
+    def test_filtered_sensor_types_unique(self):
+        """Test filtered sensor_types returns a unique list."""
+        sensor_type = create_sensor_type(user=self.user)
+        create_sensor_type(user=self.user, name="Room 404")
+        Sensor.objects.create(user=self.user, sensor_type=sensor_type)
+        Sensor.objects.create(
+            user=self.user, name="Other sensor", sensor_type=sensor_type)
+
+        res = self.client.get(SENSOR_TYPE_URL, {"assigned_only": 1})
+        self.assertEqual(len(res.data), 1)

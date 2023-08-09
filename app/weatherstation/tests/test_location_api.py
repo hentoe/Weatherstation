@@ -8,7 +8,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Location
+from core.models import Location, Sensor
 
 from weatherstation.serializers import LocationSerializer
 
@@ -154,3 +154,28 @@ class PrivateLocationApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Location.objects.filter(id=location.id).exists())
+
+    def test_filter_location_assigned_to_sensors(self):
+        """Test listing locations by those assigned to sensors."""
+        location1 = create_location(user=self.user)
+        location2 = create_location(user=self.user, name="Attic")
+
+        Sensor.objects.create(user=self.user, location=location1)
+
+        res = self.client.get(LOCATION_URL, {"assigned_only": 1})
+
+        s1 = LocationSerializer(location1)
+        s2 = LocationSerializer(location2)
+        self.assertIn(s1.data, res.data)
+        self.assertNotIn(s2.data, res.data)
+
+    def test_filtered_locations_unique(self):
+        """Test filtered locations returns a unique list."""
+        location = create_location(user=self.user)
+        create_location(user=self.user, name="Room 404")
+        Sensor.objects.create(user=self.user, location=location)
+        Sensor.objects.create(
+            user=self.user, name="Other sensor", location=location)
+
+        res = self.client.get(LOCATION_URL, {"assigned_only": 1})
+        self.assertEqual(len(res.data), 1)
