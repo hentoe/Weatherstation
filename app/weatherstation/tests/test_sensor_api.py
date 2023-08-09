@@ -18,6 +18,8 @@ from weatherstation.serializers import (
     SensorSerializer,
     SensorDetailSerializer,
 )
+from weatherstation.tests.test_location_api import create_location
+from weatherstation.tests.test_sensor_type_api import create_sensor_type
 
 SENSORS_URL = reverse("weatherstation:sensor-list")
 
@@ -260,3 +262,41 @@ class PrivateSensorAPITests(TestCase):
         self.assertEqual(sensors.count(), 1)
         sensor = sensors[0]
         self.assertEqual(location, sensor.location)
+
+    def test_filter_by_sensor_types(self):
+        """Test filtering sensors by sensor types."""
+        st1 = create_sensor_type(user=self.user)
+        st2 = create_sensor_type(user=self.user)
+        st3 = create_sensor_type(user=self.user)
+        s1 = create_sensor(user=self.user, sensor_type=st1)
+        s2 = create_sensor(user=self.user, sensor_type=st2)
+        s3 = create_sensor(user=self.user, sensor_type=st3)
+
+        params = {"sensor_types": f"{st1.id},{st2.id}"}
+        res = self.client.get(SENSORS_URL, params)
+
+        ss1 = SensorSerializer(s1)
+        ss2 = SensorSerializer(s2)
+        ss3 = SensorSerializer(s3)
+        self.assertIn(ss1.data, res.data)
+        self.assertIn(ss2.data, res.data)
+        self.assertNotIn(ss3.data, res.data)
+
+    def test_filter_by_locations(self):
+        """Test filtering sensors by locations."""
+        l1 = create_location(user=self.user)
+        l2 = create_location(user=self.user)
+        l3 = create_location(user=self.user)
+        s1 = create_sensor(user=self.user, location=l1)
+        s2 = create_sensor(user=self.user, location=l2)
+        s3 = create_sensor(user=self.user, location=l3)
+
+        params = {"locations": f"{l1.id},{l2.id}"}
+        res = self.client.get(SENSORS_URL, params)
+
+        ss1 = SensorSerializer(s1)
+        ss2 = SensorSerializer(s2)
+        ss3 = SensorSerializer(s3)
+        self.assertIn(ss1.data, res.data)
+        self.assertIn(ss2.data, res.data)
+        self.assertNotIn(ss3.data, res.data)

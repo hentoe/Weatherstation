@@ -25,6 +25,22 @@ from core.models import (
 from weatherstation import serializers
 
 
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "locations",
+                OpenApiTypes.STR,
+                description="Comma separated list of location IDs to filter",
+            ),
+            OpenApiParameter(
+                "sensor_types",
+                OpenApiTypes.STR,
+                description="Comma separated list of sensortype IDs to filter",
+            )
+        ]
+    )
+)
 class SensorViewSet(viewsets.ModelViewSet):
     """View for managing sensor APIs."""
     serializer_class = serializers.SensorDetailSerializer
@@ -32,9 +48,25 @@ class SensorViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def _params_to_ints(self, qs):
+        """Convert a list of strings to integers."""
+        return [int(str_id) for str_id in qs.split(",")]
+
     def get_queryset(self):
         """Retrieve sensors for authenticated user."""
-        return self.queryset.filter(user=self.request.user).order_by("-id")
+        locations = self.request.query_params.get("locations")
+        sensor_types = self.request.query_params.get("sensor_types")
+        queryset = self.queryset
+        if locations:
+            location_ids = self._params_to_ints(locations)
+            queryset = queryset.filter(location__id__in=location_ids)
+        if sensor_types:
+            sensor_type_ids = self._params_to_ints(sensor_types)
+            queryset = queryset.filter(sensor_type__id__in=sensor_type_ids)
+
+        return queryset.filter(
+            user=self.request.user
+        ).order_by("-id").distinct()
 
     def get_serializer_class(self):
         """Return the serializer class for request."""
@@ -55,6 +87,22 @@ class SensorViewSet(viewsets.ModelViewSet):
                 "sensors",
                 OpenApiTypes.STR,
                 description="Comma separated list of sensor IDs to filter",
+            ),
+            OpenApiParameter(
+                "start_date",
+                OpenApiTypes.DATETIME,
+                description=("Filter measurements after this date and time "
+                             "(YYYY-MM-DD HH:MM:SS). Time zone aware format "
+                             "is recommended (e.g., "
+                             "'2023-08-06 00:00:00+02:00')."),
+            ),
+            OpenApiParameter(
+                "end_date",
+                OpenApiTypes.DATETIME,
+                description=("Filter measurements before this date and time "
+                             "(YYYY-MM-DD HH:MM:SS). Time zone aware format "
+                             "is recommended (e.g., "
+                             "'2023-08-06 00:00:00+02:00')."),
             )
         ]
     )
@@ -73,10 +121,21 @@ class MeasurementViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Retrieve measurements for authenticated user."""
         sensors = self.request.query_params.get("sensors")
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+
         queryset = self.queryset
+
         if sensors:
             sensor_ids = self._params_to_ints(sensors)
             queryset = queryset.filter(sensor__id__in=sensor_ids)
+
+        if start_date:
+            queryset = queryset.filter(timestamp__gte=start_date)
+
+        if end_date:
+            queryset = queryset.filter(timestamp__lte=end_date)
+
         return queryset.filter(
             user=self.request.user
         ).order_by("-id").distinct()
@@ -110,6 +169,17 @@ class MeasurementViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
 
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "assigned_only",
+                OpenApiTypes.INT, enum=[0, 1],
+                description="Filter by items assigned to sensors.",
+            )
+        ]
+    )
+)
 class BaseSensorAttrViewSet(mixins.ListModelMixin,
                             mixins.CreateModelMixin,
                             mixins.UpdateModelMixin,
@@ -122,7 +192,15 @@ class BaseSensorAttrViewSet(mixins.ListModelMixin,
 
     def get_queryset(self):
         """Filter queryset to authenticated user."""
-        return self.queryset.filter(user=self.request.user).order_by("-name")
+        assigned_only = bool(
+            int(self.request.query_params.get("assigned_only", 0))
+        )
+        queryset = self.queryset
+        if assigned_only:
+            queryset = queryset.filter(sensor__isnull=False)
+        return queryset.filter(
+            user=self.request.user
+        ).order_by("-name").distinct()
 
     def perform_create(self, serializer):
         """Create a new measurement."""
