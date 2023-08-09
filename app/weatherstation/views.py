@@ -90,13 +90,19 @@ class SensorViewSet(viewsets.ModelViewSet):
             ),
             OpenApiParameter(
                 "start_date",
-                OpenApiTypes.DATE,
-                description="Start timestamp for filtering",
+                OpenApiTypes.DATETIME,
+                description=("Filter measurements after this date and time "
+                             "(YYYY-MM-DD HH:MM:SS). Time zone aware format "
+                             "is recommended (e.g., "
+                             "'2023-08-06 00:00:00+02:00')."),
             ),
             OpenApiParameter(
                 "end_date",
-                OpenApiTypes.DATE,
-                description="End timestamp for filtering",
+                OpenApiTypes.DATETIME,
+                description=("Filter measurements before this date and time "
+                             "(YYYY-MM-DD HH:MM:SS). Time zone aware format "
+                             "is recommended (e.g., "
+                             "'2023-08-06 00:00:00+02:00')."),
             )
         ]
     )
