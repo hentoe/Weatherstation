@@ -1,13 +1,13 @@
 """
 Tests for measurement APIs.
 """
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from django.utils.timezone import make_aware
+from django.utils import timezone
 
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -44,7 +44,7 @@ def create_measurement(user, sensor, **params):
 def create_measurements(user, days=10):
     """Create and return a list of measurements."""
     s1 = create_sensor(user=user)
-    date = make_aware(datetime.now())
+    date = timezone.now()
     measurements = []
     for day in range(days):
         m = create_measurement(
@@ -290,7 +290,7 @@ class PrivateMeasurementAPITests(TestCase):
         date = measurements[-1].timestamp
         start_date = date - timedelta(days=5)
 
-        params = {"start_date": start_date.strftime("%Y-%m-%d")}
+        params = {"start_date": start_date.strftime("%Y-%m-%d %H:%M:%S%z")}
         res = self.client.get(MEASUREMENTS_URL, params)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
@@ -308,7 +308,7 @@ class PrivateMeasurementAPITests(TestCase):
 
         end_date = date - timedelta(days=5)
 
-        params = {"end_date": end_date.strftime("%Y-%m-%d")}
+        params = {"end_date": end_date.strftime("%Y-%m-%d %H:%M:%S%z")}
         res = self.client.get(MEASUREMENTS_URL, params)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
@@ -328,8 +328,8 @@ class PrivateMeasurementAPITests(TestCase):
         end_date = date - timedelta(days=6)
 
         params = {
-            "start_date": start_date.strftime("%Y-%m-%d"),
-            "end_date": end_date.strftime("%Y-%m-%d")
+            "start_date": start_date.strftime("%Y-%m-%d %H:%M:%S%z"),
+            "end_date": end_date.strftime("%Y-%m-%d %H:%M:%S%z")
         }
         res = self.client.get(MEASUREMENTS_URL, params)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
