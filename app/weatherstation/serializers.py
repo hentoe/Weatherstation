@@ -68,6 +68,21 @@ class SensorSerializer(serializers.ModelSerializer):
         sensor.save()
         return sensor
 
+    def update(self, instance, validated_data):
+        """Update a sensor."""
+        sensor_type = validated_data.pop("sensor_type", None)
+        location = validated_data.pop("location", None)
+        instance.name = validated_data.get("name", instance.name)
+        instance.description = validated_data.get(
+            "description",
+            instance.description
+        )
+        self._get_or_create_sensor_type(sensor_type, instance)
+        self._get_or_create_location(location, instance)
+
+        instance.save()
+        return instance
+
 
 class SensorDetailSerializer(SensorSerializer):
     """Serializer for sensor detail view."""
