@@ -263,6 +263,41 @@ class PrivateSensorAPITests(TestCase):
         sensor = sensors[0]
         self.assertEqual(location, sensor.location)
 
+    def test_update_sensor_with_existing_type(self):
+        """Test updating a sensor with existing sensor type."""
+        sensor_type = SensorType.objects.create(
+            user=self.user,
+            name="Temperature",
+            unit="°C"
+        )
+        sensor = create_sensor(user=self.user)
+        payload = {
+            "sensor_type": {"name": "Temperature", "unit": "°C"}
+        }
+        url = detail_url(sensor.id)
+        res = self.client.patch(url, payload, format="json")
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        sensor.refresh_from_db()
+        self.assertEqual(sensor_type, sensor.sensor_type)
+
+    def test_update_sensor_with_existing_location(self):
+        """Test updating a sensor with existing location."""
+        location = Location.objects.create(
+            user=self.user,
+            name="Garage"
+        )
+        sensor = create_sensor(user=self.user)
+        payload = {
+            "location": {"name": "Garage"},
+        }
+        url = detail_url(sensor.id)
+        res = self.client.patch(url, payload, format="json")
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        sensor.refresh_from_db()
+        self.assertEqual(location, sensor.location)
+
     def test_filter_by_sensor_types(self):
         """Test filtering sensors by sensor types."""
         st1 = create_sensor_type(user=self.user)
