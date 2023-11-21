@@ -15,8 +15,7 @@ from rest_framework.test import APIClient
 from core.models import Measurement
 
 from weatherstation.serializers import (
-    MeasurementSerializer,
-    MeasurementDetailSerializer
+    MeasurementSerializer
 )
 from weatherstation.tests.test_sensor_api import create_sensor
 
@@ -121,7 +120,7 @@ class PrivateMeasurementAPITests(TestCase):
         url = detail_url(measurement.id)
         res = self.client.get(url)
 
-        serializer = MeasurementDetailSerializer(measurement)
+        serializer = MeasurementSerializer(measurement)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
