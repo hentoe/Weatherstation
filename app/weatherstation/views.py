@@ -124,7 +124,7 @@ class SensorViewSet(viewsets.ModelViewSet):
 )
 class MeasurementViewSet(viewsets.ModelViewSet):
     """View for managing measurement APIs."""
-    serializer_class = serializers.MeasurementSerializer
+    serializer_class = serializers.MeasurementDetailSerializer
     queryset = Measurement.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -176,7 +176,11 @@ class MeasurementViewSet(viewsets.ModelViewSet):
         ).order_by("-id").distinct()
 
     def get_serializer_class(self):
-        """Return the serializer class for requests."""
+        """Return the serializer class for request."""
+        if self.action == "retrieve":
+            return self.serializer_class
+        if self.action != "list":
+            return serializers.MeasurementSerializer
         return self.serializer_class
 
     def perform_create(self, serializer):

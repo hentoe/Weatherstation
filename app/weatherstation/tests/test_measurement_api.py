@@ -15,7 +15,8 @@ from rest_framework.test import APIClient
 from core.models import Measurement
 
 from weatherstation.serializers import (
-    MeasurementSerializer
+    MeasurementSerializer,
+    MeasurementDetailSerializer
 )
 from weatherstation.tests.test_sensor_api import create_sensor
 
@@ -92,7 +93,7 @@ class PrivateMeasurementAPITests(TestCase):
         res = self.client.get(MEASUREMENTS_URL)
 
         measurements = Measurement.objects.all().order_by("-id")
-        serializer = MeasurementSerializer(measurements, many=True)
+        serializer = MeasurementDetailSerializer(measurements, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
@@ -108,7 +109,7 @@ class PrivateMeasurementAPITests(TestCase):
         res = self.client.get(MEASUREMENTS_URL)
 
         measurements = Measurement.objects.filter(user=self.user)
-        serializer = MeasurementSerializer(measurements, many=True)
+        serializer = MeasurementDetailSerializer(measurements, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
@@ -120,7 +121,7 @@ class PrivateMeasurementAPITests(TestCase):
         url = detail_url(measurement.id)
         res = self.client.get(url)
 
-        serializer = MeasurementSerializer(measurement)
+        serializer = MeasurementDetailSerializer(measurement)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
@@ -277,9 +278,9 @@ class PrivateMeasurementAPITests(TestCase):
         params = {"sensors": f"{s1.id},{s2.id}"}
         res = self.client.get(MEASUREMENTS_URL, params)
 
-        sm1 = MeasurementSerializer(m1)
-        sm2 = MeasurementSerializer(m2)
-        sm3 = MeasurementSerializer(m3)
+        sm1 = MeasurementDetailSerializer(m1)
+        sm2 = MeasurementDetailSerializer(m2)
+        sm3 = MeasurementDetailSerializer(m3)
         self.assertIn(sm1.data, res.data)
         self.assertIn(sm2.data, res.data)
         self.assertNotIn(sm3.data, res.data)
@@ -295,10 +296,10 @@ class PrivateMeasurementAPITests(TestCase):
 
         for measurement in measurements:
             if measurement.timestamp < start_date:
-                self.assertNotIn(MeasurementSerializer(
+                self.assertNotIn(MeasurementDetailSerializer(
                     measurement).data, res.data)
             else:
-                self.assertIn(MeasurementSerializer(
+                self.assertIn(MeasurementDetailSerializer(
                     measurement).data, res.data)
 
     def test_filter_by_end_date(self):
@@ -366,13 +367,13 @@ class PrivateMeasurementAPITests(TestCase):
         res = self.client.get(MEASUREMENTS_URL, params)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertNotIn(MeasurementSerializer(
+        self.assertNotIn(MeasurementDetailSerializer(
             m1).data, res.data)
-        self.assertIn(MeasurementSerializer(
+        self.assertIn(MeasurementDetailSerializer(
             m2).data, res.data)
-        self.assertIn(MeasurementSerializer(
+        self.assertIn(MeasurementDetailSerializer(
             m3).data, res.data)
-        self.assertNotIn(MeasurementSerializer(
+        self.assertNotIn(MeasurementDetailSerializer(
             m4).data, res.data)
-        self.assertNotIn(MeasurementSerializer(
+        self.assertNotIn(MeasurementDetailSerializer(
             m5).data, res.data)
