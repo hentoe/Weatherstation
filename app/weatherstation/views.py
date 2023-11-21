@@ -133,7 +133,9 @@ class MeasurementViewSet(viewsets.ModelViewSet):
         sensors = self.request.query_params.get("sensors")
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
-        latest = self.request.query_params.get("latest")
+        latest = bool(
+            int(self.request.query_params.get("latest", 0))
+        )
 
         queryset = self.queryset
 
