@@ -1,6 +1,8 @@
 """
 Views for the weatherstation APIs.
 """
+from django.db.models import Max
+
 from drf_spectacular.utils import (
     extend_schema_view,
     extend_schema,
@@ -103,6 +105,14 @@ class SensorViewSet(viewsets.ModelViewSet):
                              "(YYYY-MM-DD HH:MM:SS). Time zone aware format "
                              "is recommended (e.g., "
                              "'2023-08-06 00:00:00+02:00')."),
+            ),
+            OpenApiParameter(
+                "latest",
+                OpenApiTypes.INT, enum=[0, 1],
+                description=("Return only the latest measurement for each "
+                             "sensor. If used with start_date and end_date, "
+                             "returns the latest measurement within the "
+                             "time range "),
             )
         ]
     )
@@ -123,6 +133,7 @@ class MeasurementViewSet(viewsets.ModelViewSet):
         sensors = self.request.query_params.get("sensors")
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
+        latest = self.request.query_params.get("latest")
 
         queryset = self.queryset
 
@@ -135,6 +146,17 @@ class MeasurementViewSet(viewsets.ModelViewSet):
 
         if end_date:
             queryset = queryset.filter(timestamp__lte=end_date)
+        if latest:
+            # Get the latest timestamp for each sensor
+            latest_measurements = queryset.values('sensor').annotate(
+                latest_timestamp=Max('timestamp'))
+
+            # Filter the queryset to include only the latest measurements
+            queryset = queryset.filter(
+                sensor__in=[item['sensor'] for item in latest_measurements],
+                timestamp__in=[item['latest_timestamp']
+                               for item in latest_measurements]
+            )
 
         return queryset.filter(
             user=self.request.user
