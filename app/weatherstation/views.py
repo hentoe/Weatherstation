@@ -15,6 +15,7 @@ from rest_framework import (
     viewsets
 )
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -52,7 +53,11 @@ class SensorViewSet(viewsets.ModelViewSet):
 
     def _params_to_ints(self, qs):
         """Convert a list of strings to integers."""
-        return [int(str_id) for str_id in qs.split(",")]
+        try:
+            return [int(str_id) for str_id in qs.split(",")]
+        except ValueError:
+            raise ValidationError(
+                {"message": "All parameters need to be integers."})
 
     def get_queryset(self):
         """Retrieve sensors for authenticated user."""
@@ -126,16 +131,22 @@ class MeasurementViewSet(viewsets.ModelViewSet):
 
     def _params_to_ints(self, qs):
         """Convert a list of strings to integers."""
-        return [int(str_id) for str_id in qs.split(",")]
+        try:
+            return [int(str_id) for str_id in qs.split(",")]
+        except ValueError:
+            raise ValidationError(
+                {"message": "All parameters need to be integers."})
 
     def get_queryset(self):
         """Retrieve measurements for authenticated user."""
         sensors = self.request.query_params.get("sensors")
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
-        latest = bool(
-            int(self.request.query_params.get("latest", 0))
-        )
+        latest = self.request.query_params.get("latest", 0)
+        if not str(latest).isdigit():
+            raise ValidationError(
+                {"message": "The 'latest' parameter must be an integer."})
+        latest = bool(int(latest))
 
         queryset = self.queryset
 
@@ -213,9 +224,13 @@ class BaseSensorAttrViewSet(mixins.ListModelMixin,
 
     def get_queryset(self):
         """Filter queryset to authenticated user."""
-        assigned_only = bool(
-            int(self.request.query_params.get("assigned_only", 0))
-        )
+
+        assigned_only = self.request.query_params.get("assigned_only", 0)
+        if not str(assigned_only).isdigit():
+            raise ValidationError(
+                {"message": "The 'assigned_only' parameter must be an integer."})
+        assigned_only = bool(int(assigned_only))
+
         queryset = self.queryset
         if assigned_only:
             queryset = queryset.filter(sensor__isnull=False)
