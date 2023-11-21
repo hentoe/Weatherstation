@@ -228,7 +228,8 @@ class BaseSensorAttrViewSet(mixins.ListModelMixin,
         assigned_only = self.request.query_params.get("assigned_only", 0)
         if not str(assigned_only).isdigit():
             raise ValidationError(
-                {"message": "The 'assigned_only' parameter must be an integer."})
+                {"message": "The 'assigned_only' parameter"
+                 " must be an integer."})
         assigned_only = bool(int(assigned_only))
 
         queryset = self.queryset
