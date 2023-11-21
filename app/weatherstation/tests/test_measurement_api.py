@@ -344,3 +344,36 @@ class PrivateMeasurementAPITests(TestCase):
             else:
                 self.assertNotIn(MeasurementSerializer(
                     measurement).data, res.data)
+
+    def test_get_latest_measurement(self):
+        """Test getting the latest measurement."""
+        s1 = create_sensor(user=self.user)
+        s2 = create_sensor(user=self.user)
+        s3 = create_sensor(user=self.user)
+        m1 = create_measurement(value=Decimal("1.23"),
+                                user=self.user, sensor=s1)
+        m2 = create_measurement(user=self.user, sensor=s1)
+        m3 = create_measurement(value=Decimal("3.14"),
+                                user=self.user, sensor=s2)
+        m4 = create_measurement(value=Decimal(
+            "2.71"), user=self.user, sensor=s3)
+        m5 = create_measurement(value=Decimal(
+            "12.1"), user=self.user, sensor=s3)
+
+        params = {
+            "sensors": f"{s1.id}, {s2.id}",
+            "latest": "1"
+        }
+        res = self.client.get(MEASUREMENTS_URL, params)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertNotIn(MeasurementSerializer(
+            m1).data, res.data)
+        self.assertIn(MeasurementSerializer(
+            m2).data, res.data)
+        self.assertIn(MeasurementSerializer(
+            m3).data, res.data)
+        self.assertNotIn(MeasurementSerializer(
+            m4).data, res.data)
+        self.assertNotIn(MeasurementSerializer(
+            m5).data, res.data)
