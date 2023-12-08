@@ -30,7 +30,8 @@ CSRF_TRUSTED_ORIGINS = ["https://" + host for host in ALLOWED_HOSTS]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Changeme to env variable
     "http://127.0.0.1:8000"
-]
+] if DEBUG else os.environ.get(
+    "VUE_FRONTEND_DOMAIN").split(",")
 
 # Application definition
 
