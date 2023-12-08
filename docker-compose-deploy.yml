@@ -42,6 +42,7 @@ services:
       - proxy-dhparams:/vol/proxy
       - certbot-certs:/etc/letsencrypt
     environment:
+      - SSL=${SSL}
       - DOMAIN=${DOMAIN}
 
   certbot:
