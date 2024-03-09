@@ -15,11 +15,12 @@ from rest_framework import (
     viewsets
 )
 
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from knox.auth import TokenAuthentication
+from knox.auth import TokenAuthentication as KnoxTokenAuthentication
 
 from core.models import (
     Location,
@@ -50,7 +51,7 @@ class SensorViewSet(viewsets.ModelViewSet):
     """View for managing sensor APIs."""
     serializer_class = serializers.SensorDetailSerializer
     queryset = Sensor.objects.all()
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [KnoxTokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def _params_to_ints(self, qs):
@@ -128,7 +129,7 @@ class MeasurementViewSet(viewsets.ModelViewSet):
     """View for managing measurement APIs."""
     serializer_class = serializers.MeasurementDetailSerializer
     queryset = Measurement.objects.all()
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication, KnoxTokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def _params_to_ints(self, qs):
@@ -225,7 +226,7 @@ class BaseSensorAttrViewSet(mixins.ListModelMixin,
                             viewsets.GenericViewSet):
     """Manage sensor types."""
 
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [KnoxTokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
