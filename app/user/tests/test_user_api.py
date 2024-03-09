@@ -9,7 +9,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 CREATE_USER_URL = reverse("user:create")
-TOKEN_URL = reverse("user:token")
+TOKEN_URL = reverse("user:knox_login")
 ME_URL = reverse("user:me")
 
 
