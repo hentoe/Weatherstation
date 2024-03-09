@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
 from core.models import (
@@ -22,6 +23,7 @@ from weatherstation.tests.test_location_api import create_location
 from weatherstation.tests.test_sensor_type_api import create_sensor_type
 
 SENSORS_URL = reverse("weatherstation:sensor-list")
+LOGIN_URL = reverse("user:knox_login")
 
 
 def detail_url(sensor_id):
@@ -335,3 +337,34 @@ class PrivateSensorAPITests(TestCase):
         self.assertIn(ss1.data, res.data)
         self.assertIn(ss2.data, res.data)
         self.assertNotIn(ss3.data, res.data)
+
+
+class PrivateSensorAPIWithTokenTests(TestCase):
+    """Test authenticated API requests with Token in Header."""
+    def setUp(self):
+        self.client = APIClient()
+        self.user = create_user(email="user@example.com", password="testp1235")
+        self.drf_token = Token.objects.create(user=self.user)
+        res = self.client.post(LOGIN_URL, {
+            "email": "user@example.com",
+            "password": "testp1235"
+            })
+        self.knox_token = res.data.get("token")
+
+    def test_drf_token_is_unauthorized(self):
+        """Test auth is required to call API."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Token {self.drf_token.key}'
+            )
+        res = self.client.get(SENSORS_URL)
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_knox_token_is_authorized(self):
+        """Test knox token is authorized to call endpoint."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Token {self.knox_token}'
+            )
+        res = self.client.get(SENSORS_URL)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
