@@ -9,6 +9,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 CREATE_USER_URL = reverse("user:create")
+LOGIN_URL = reverse("user:knox_login")
 TOKEN_URL = reverse("user:token")
 ME_URL = reverse("user:me")
 
@@ -81,6 +82,26 @@ class PublicUserApiTests(TestCase):
         res = self.client.post(TOKEN_URL, payload)
 
         self.assertIn("token", res.data)
+        self.assertNotIn("expiry", res.data)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_create_knox_token_for_user(self):
+        """Test generates knox token for valid credentials."""
+        user_details = {
+            "name": "Test Name",
+            "email": "test@example.com",
+            "password": "test-user-password1234ztghads",
+        }
+        create_user(**user_details)
+
+        payload = {
+            "email": user_details["email"],
+            "password": user_details["password"]
+        }
+        res = self.client.post(LOGIN_URL, payload)
+
+        self.assertIn("token", res.data)
+        self.assertIn("expiry", res.data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_token_bad_credentials(self):
@@ -88,7 +109,7 @@ class PublicUserApiTests(TestCase):
         create_user(email="test@example.com", password="goodpassword")
 
         payload = {"email": "test@example.com", "password": "badpass"}
-        res = self.client.post(TOKEN_URL, payload)
+        res = self.client.post(LOGIN_URL, payload)
 
         self.assertNotIn("token", res.data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
@@ -98,7 +119,7 @@ class PublicUserApiTests(TestCase):
         create_user(email="test@example.com", password="goodpassword")
 
         payload = {"email": "test@example.com", "password": ""}
-        res = self.client.post(TOKEN_URL, payload)
+        res = self.client.post(LOGIN_URL, payload)
 
         self.assertNotIn("token", res.data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
