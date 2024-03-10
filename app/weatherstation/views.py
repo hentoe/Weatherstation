@@ -15,7 +15,6 @@ from rest_framework import (
     viewsets
 )
 
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -28,6 +27,7 @@ from core.models import (
     Sensor,
     SensorType
 )
+from user.authentication import APIKeyAuthentication
 from weatherstation import serializers
 
 
@@ -129,7 +129,7 @@ class MeasurementViewSet(viewsets.ModelViewSet):
     """View for managing measurement APIs."""
     serializer_class = serializers.MeasurementDetailSerializer
     queryset = Measurement.objects.all()
-    authentication_classes = [TokenAuthentication, KnoxTokenAuthentication]
+    authentication_classes = [APIKeyAuthentication, KnoxTokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def _params_to_ints(self, qs):
