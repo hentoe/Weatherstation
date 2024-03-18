@@ -22,13 +22,18 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "changeme")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.environ.get("DEBUG", 0)))
 
-ALLOWED_HOSTS = [] if DEBUG else os.environ.get("DJANGO_ALLOWED_HOSTS").split(",")
+ALLOWED_HOSTS = (
+    [] if DEBUG else os.environ.get("DJANGO_ALLOWED_HOSTS").split(",")
+)
 
 
 # CSRF Settings
 CSRF_TRUSTED_ORIGINS = ["https://" + host for host in ALLOWED_HOSTS]
 CORS_ALLOWED_ORIGINS = (
-    ["http://localhost:5173", "http://127.0.0.1:8000"]  # Changeme to env variable
+    [
+        "http://localhost:5173",
+        "http://127.0.0.1:8000",
+    ]  # Changeme to env variable
     if DEBUG
     else os.environ.get("VUE_FRONTEND_DOMAIN").split(",")
 )
@@ -42,12 +47,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "core",
+    # Third-party
     "rest_framework",
     "rest_framework.authtoken",
     "knox",
     "corsheaders",
     "drf_spectacular",
+    "djoser",
+    # Custom
+    "core",
     "user",
     "weatherstation",
 ]
@@ -150,4 +158,28 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
+    "OPENAPI_AUTHENTICATION_CLASSES": (
+        "user.authentication.KnoxTokenAuthExtension",
+        "user.authentication.APIKeyAuthExtension",
+    ),
 }
+
+# Djoser settings
+DJOSER = {
+    "PASSWORD_RESET_CONFIRM_URL": "password/reset/confirm/{uid}/{token}",
+    "SEND_ACTIVATION_EMAIL": True,
+    "ACTIVATION_URL": "activate/{uid}/{token}",
+    "USER_CREATE_PASSWORD_RETYPE": True,
+    "PASSWORD_RESET_CONFIRM_RETYPE": True,
+    "TOKEN_MODEL": "knox.models.AuthToken",
+}
+
+# Email Settings
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", True)
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER")
+SERVER_EMAIL = os.getenv("EMAIL_HOST_USER")

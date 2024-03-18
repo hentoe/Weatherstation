@@ -21,4 +21,5 @@ urlpatterns = [
     ),
     path("api/user/", include("user.urls")),
     path("api/weatherstation/", include("weatherstation.urls")),
+    path("api/", include("djoser.urls")),
 ]
