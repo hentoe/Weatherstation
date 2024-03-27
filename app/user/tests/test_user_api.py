@@ -12,7 +12,7 @@ from rest_framework import status
 CREATE_USER_URL = reverse("user-list")
 LOGIN_URL = reverse("user:knox_login")
 TOKEN_URL = reverse("user:token")
-ME_URL = reverse("user:me")
+ME_URL = "/api/users/me/"
 
 
 def create_user(**params):
