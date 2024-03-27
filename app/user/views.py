@@ -15,7 +15,7 @@ from user.serializers import UserSerializer, AuthTokenSerializer
 
 
 class LoginView(KnoxLoginView):
-    """Customize Loginview for using TokenAuthentication only."""
+    """Loginview for TokenAuthentication."""
 
     permission_classes = (permissions.AllowAny,)
     serializer_class = AuthTokenSerializer
@@ -26,12 +26,6 @@ class LoginView(KnoxLoginView):
         user = serializer.validated_data["user"]
         login(request, user)
         return super(LoginView, self).post(request, format=None)
-
-
-class CreateUserView(generics.CreateAPIView):
-    """Create a new user in the system."""
-
-    serializer_class = UserSerializer
 
 
 class CreateTokenView(ObtainAuthToken):

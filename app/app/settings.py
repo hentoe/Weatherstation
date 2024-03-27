@@ -172,6 +172,11 @@ DJOSER = {
     "USER_CREATE_PASSWORD_RETYPE": True,
     "PASSWORD_RESET_CONFIRM_RETYPE": True,
     "TOKEN_MODEL": "knox.models.AuthToken",
+    "SERIALIZERS": {
+        "user_create_password_retype": "user.serializers.UserCreateSerializer",
+        "user": "user.serializers.UserSerializer",
+        "current_user": "user.serializers.UserSerializer",
+    },
 }
 
 # Email Settings

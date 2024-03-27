@@ -9,7 +9,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-CREATE_USER_URL = reverse("user:create")
+CREATE_USER_URL = reverse("user-list")
 LOGIN_URL = reverse("user:knox_login")
 TOKEN_URL = reverse("user:token")
 ME_URL = reverse("user:me")
@@ -30,7 +30,8 @@ class PublicUserApiTests(TestCase):
         """Test creating a user is successful."""
         payload = {
             "email": "test@example.com",
-            "password": "test1234",
+            "password": "supersecurepassword123",
+            "re_password": "supersecurepassword123",
             "name": "Test Name",
         }
         res = self.client.post(CREATE_USER_URL, payload)
@@ -39,15 +40,17 @@ class PublicUserApiTests(TestCase):
         user = get_user_model().objects.get(email=payload["email"])
         self.assertTrue(user.check_password(payload["password"]))
         self.assertNotIn("password", res.data)
+        self.assertEqual(user.name, payload["name"])
 
     def test_create_user_with_email_exists_error(self):
         """Test error returned if user with email exists."""
         payload = {
             "email": "test@example.com",
-            "password": "test1234",
+            "password": "supersecurepassword123",
             "name": "Test Name",
         }
         create_user(**payload)
+        payload["re_password"] = payload["password"]
         res = self.client.post(CREATE_USER_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
@@ -57,6 +60,7 @@ class PublicUserApiTests(TestCase):
         payload = {
             "email": "test@example.com",
             "password": "test",
+            "re_password": "test",
             "name": "Test Name",
         }
         res = self.client.post(CREATE_USER_URL, payload)
@@ -138,7 +142,7 @@ class PrivateUserApiTests(TestCase):
     def setUp(self):
         self.user = create_user(
             email="test@example.com",
-            password="testppass234",
+            password="supersecurepassword123",
             name="Test Name",
         )
         self.client = APIClient()
@@ -165,11 +169,9 @@ class PrivateUserApiTests(TestCase):
 
     def test_update_user_profile(self):
         """Test updating the user profile for the authenticated user."""
-        payload = {"name": "Updated name", "password": "newpassword2312"}
+        payload = {"name": "Updated name"}
 
         res = self.client.patch(ME_URL, payload)
-
         self.user.refresh_from_db()
         self.assertEqual(self.user.name, payload["name"])
-        self.assertTrue(self.user.check_password(payload["password"]))
         self.assertEqual(res.status_code, status.HTTP_200_OK)

@@ -1,6 +1,7 @@
 """
 Database models.
 """
+
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
@@ -8,6 +9,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+from django.utils.translation import gettext as _
 
 
 class UserManager(BaseUserManager):
@@ -16,7 +18,7 @@ class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         """Create, save and return a new user."""
         if not email:
-            raise ValueError("User must have an email address.")
+            raise ValueError(_("User must have an email address."))
         user = self.model(email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -35,6 +37,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     """User in the system."""
+
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
@@ -47,9 +50,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Location(models.Model):
     """Location object."""
+
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
     )
     name = models.CharField(max_length=255)
 
@@ -59,9 +62,9 @@ class Location(models.Model):
 
 class SensorType(models.Model):
     """Sensor Type object."""
+
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
     )
     name = models.CharField(max_length=255)
     unit = models.CharField(max_length=255, blank=True)
@@ -72,16 +75,18 @@ class SensorType(models.Model):
 
 class Sensor(models.Model):
     """Sensor object."""
+
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
     )
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     sensor_type = models.ForeignKey(
-        SensorType, on_delete=models.SET_NULL, null=True, blank=True)
+        SensorType, on_delete=models.SET_NULL, null=True, blank=True
+    )
     location = models.ForeignKey(
-        Location, on_delete=models.SET_NULL, null=True, blank=True)
+        Location, on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     def __str__(self):
         return self.name
@@ -89,9 +94,9 @@ class Sensor(models.Model):
 
 class Measurement(models.Model):
     """Measurement object."""
+
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
     )
     value = models.DecimalField(max_digits=10, decimal_places=2)
     timestamp = models.DateTimeField(auto_now_add=True)
