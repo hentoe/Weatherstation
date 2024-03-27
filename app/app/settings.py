@@ -166,7 +166,9 @@ SPECTACULAR_SETTINGS = {
 
 # Domain for djoser emails
 # Get rid of http:// or https:// from the env variable, as it is already part of the email template
-DOMAIN = os.environ.get("VUE_FRONTEND_DOMAIN").split("://")[1]
+DOMAIN = os.environ.get("VUE_FRONTEND_DOMAIN", "localhost:8000").split("://")[
+    -1
+]
 # Djoser settings
 DJOSER = {
     "PASSWORD_RESET_CONFIRM_URL": "#/password/reset/confirm/?uid={uid}&token={token}",
