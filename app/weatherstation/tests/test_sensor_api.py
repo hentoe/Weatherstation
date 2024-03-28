@@ -341,6 +341,7 @@ class PrivateSensorAPITests(TestCase):
 
 class PrivateSensorAPIWithTokenTests(TestCase):
     """Test authenticated API requests with Token in Header."""
+
     def setUp(self):
         self.client = APIClient()
         self.user = create_user(email="user@example.com", password="testp1235")
@@ -348,14 +349,14 @@ class PrivateSensorAPIWithTokenTests(TestCase):
         res = self.client.post(LOGIN_URL, {
             "email": "user@example.com",
             "password": "testp1235"
-            })
+        })
         self.knox_token = res.data.get("token")
 
     def test_drf_token_is_unauthorized(self):
         """Test auth is required to call API."""
         self.client.credentials(
             HTTP_AUTHORIZATION=f'Token {self.drf_token.key}'
-            )
+        )
         res = self.client.get(SENSORS_URL)
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -364,7 +365,7 @@ class PrivateSensorAPIWithTokenTests(TestCase):
         """Test knox token is authorized to call endpoint."""
         self.client.credentials(
             HTTP_AUTHORIZATION=f'Token {self.knox_token}'
-            )
+        )
         res = self.client.get(SENSORS_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
