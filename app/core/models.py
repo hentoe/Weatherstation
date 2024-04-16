@@ -59,6 +59,10 @@ class Location(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def is_assigned(self):
+        return self.sensor_set.exists()
+
 
 class SensorType(models.Model):
     """Sensor Type object."""
@@ -71,6 +75,10 @@ class SensorType(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def is_assigned(self):
+        return self.sensor_set.exists()
 
 
 class Sensor(models.Model):

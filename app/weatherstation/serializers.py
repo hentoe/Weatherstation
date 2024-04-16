@@ -1,4 +1,5 @@
 """Serializers for weatherstation APIs."""
+
 from rest_framework import serializers
 
 from core.models import (
@@ -14,8 +15,12 @@ class SensorTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SensorType
-        fields = ["id", "name", "unit"]
-        read_only_fields = ["id"]
+        fields = ["id", "name", "unit", "is_assigned"]
+        read_only_fields = ["id", "is_assigned"]
+
+    def get_is_assigned(self, obj):
+        """Get the is_assigned property for the object."""
+        return Sensor.objects.filter(sensor_type_id=obj.pk).exists()
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -23,12 +28,17 @@ class LocationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Location
-        fields = ["id", "name"]
-        read_only_fields = ["id"]
+        fields = ["id", "name", "is_assigned"]
+        read_only_fields = ["id", "is_assigned"]
+
+    def get_is_assigned(self, obj):
+        """Get the is_assigned property for the object."""
+        return Sensor.objects.filter(location_id=obj.pk).exists()
 
 
 class SensorSerializer(serializers.ModelSerializer):
     """Serializer for sensors."""
+
     sensor_type = SensorTypeSerializer(required=False)
     location = LocationSerializer(required=False)
 
@@ -42,8 +52,7 @@ class SensorSerializer(serializers.ModelSerializer):
         auth_user = self.context["request"].user
         if sensor_type:
             sensor_type_obj, created = SensorType.objects.get_or_create(
-                user=auth_user,
-                **sensor_type
+                user=auth_user, **sensor_type
             )
             sensor.sensor_type = sensor_type_obj
 
@@ -52,8 +61,7 @@ class SensorSerializer(serializers.ModelSerializer):
         auth_user = self.context["request"].user
         if location:
             location_obj, created = Location.objects.get_or_create(
-                user=auth_user,
-                **location
+                user=auth_user, **location
             )
             sensor.location = location_obj
 
@@ -74,8 +82,7 @@ class SensorSerializer(serializers.ModelSerializer):
         location = validated_data.pop("location", None)
         instance.name = validated_data.get("name", instance.name)
         instance.description = validated_data.get(
-            "description",
-            instance.description
+            "description", instance.description
         )
         self._get_or_create_sensor_type(sensor_type, instance)
         self._get_or_create_location(location, instance)
@@ -88,8 +95,7 @@ class SensorDetailSerializer(SensorSerializer):
     """Serializer for sensor detail view."""
 
     class Meta(SensorSerializer.Meta):
-        fields = SensorSerializer.Meta.fields + \
-            ["description"]
+        fields = SensorSerializer.Meta.fields + ["description"]
 
 
 class MeasurementSerializer(serializers.ModelSerializer):
@@ -103,6 +109,7 @@ class MeasurementSerializer(serializers.ModelSerializer):
 
 class MeasurementDetailSerializer(MeasurementSerializer):
     """Serializer for Measurement detail view."""
+
     sensor = SensorSerializer(read_only=True)
 
     class Meta(MeasurementSerializer.Meta):
