@@ -263,7 +263,8 @@ class BaseSensorAttrViewSet(
         if not assigned_only.isdigit():
             raise ValidationError(
                 {
-                    "message": "The 'assigned_only' parameter must be an integer."
+                    "message": "The 'assigned_only'"
+                    " parameter must be an integer."
                 }
             )
         assigned_only = bool(int(assigned_only))
