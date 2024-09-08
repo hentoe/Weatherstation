@@ -171,11 +171,12 @@ DOMAIN = os.environ.get("VUE_FRONTEND_DOMAIN", "localhost:8000").split("://")[
 ]
 # Djoser settings
 DJOSER = {
-    "PASSWORD_RESET_CONFIRM_URL": "#/password/reset/confirm/?uid={uid}&token={token}",
+    "PASSWORD_RESET_CONFIRM_URL": "password/reset/confirm/?uid={uid}&token={token}",
     "SEND_ACTIVATION_EMAIL": True,
-    "ACTIVATION_URL": "#/activate?uid={uid}&token={token}",
+    "ACTIVATION_URL": "activate?uid={uid}&token={token}",
     "USER_CREATE_PASSWORD_RETYPE": True,
     "PASSWORD_RESET_CONFIRM_RETYPE": True,
+    "SET_PASSWORD_RETYPE": True,
     "TOKEN_MODEL": "knox.models.AuthToken",
     "SERIALIZERS": {
         "user_create_password_retype": "user.serializers.UserCreateSerializer",
