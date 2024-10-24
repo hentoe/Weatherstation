@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
@@ -23,3 +25,6 @@ urlpatterns = [
     path("api/weatherstation/", include("weatherstation.urls")),
     path("api/", include("djoser.urls")),
 ]
+
+if "silk" in settings.INSTALLED_APPS:
+    urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]
