@@ -130,7 +130,7 @@ class MeasurementViewSet(viewsets.ModelViewSet):
     """View for managing measurement APIs."""
 
     serializer_class = serializers.MeasurementDetailSerializer
-    queryset = Measurement.objects.all()
+    queryset = Measurement.objects.select_related("sensor__location", "sensor__sensor_type")
     authentication_classes = [APIKeyAuthentication, KnoxTokenAuthentication]
     permission_classes = [IsAuthenticated]
 
