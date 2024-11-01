@@ -3,13 +3,13 @@ Database models.
 """
 
 from django.conf import settings
-from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
 )
-from django.utils.translation import gettext as _
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class UserManager(BaseUserManager):
@@ -63,6 +63,11 @@ class Location(models.Model):
     def is_assigned(self):
         return self.sensor_set.exists()
 
+    class Meta:
+        ordering = ['name']
+        verbose_name = _("Location")
+        verbose_name_plural = _("Locations")
+
 
 class SensorType(models.Model):
     """Sensor Type object."""
@@ -79,6 +84,11 @@ class SensorType(models.Model):
     @property
     def is_assigned(self):
         return self.sensor_set.exists()
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = _("Sensor Type")
+        verbose_name_plural = _("Sensor Types")
 
 
 class Sensor(models.Model):
@@ -99,6 +109,11 @@ class Sensor(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ['name']
+        verbose_name = _("Sensor")
+        verbose_name_plural = _("Sensors")
+
 
 class Measurement(models.Model):
     """Measurement object."""
@@ -112,3 +127,8 @@ class Measurement(models.Model):
 
     def __str__(self):
         return f"{self.sensor} - {self.timestamp} - {self.value}"
+
+    class Meta:
+        ordering = ['timestamp']
+        verbose_name = _("Measurement")
+        verbose_name_plural = _("Measurements")
