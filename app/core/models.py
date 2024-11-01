@@ -10,6 +10,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.utils.translation import gettext as _
+from django.utils.functional import cached_property
 
 
 class UserManager(BaseUserManager):
@@ -59,7 +60,7 @@ class Location(models.Model):
     def __str__(self):
         return self.name
 
-    @property
+    @cached_property
     def is_assigned(self):
         return self.sensor_set.exists()
 
@@ -76,7 +77,7 @@ class SensorType(models.Model):
     def __str__(self):
         return self.name
 
-    @property
+    @cached_property
     def is_assigned(self):
         return self.sensor_set.exists()
 
@@ -90,10 +91,10 @@ class Sensor(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     sensor_type = models.ForeignKey(
-        SensorType, on_delete=models.SET_NULL, null=True, blank=True
+        SensorType, on_delete=models.SET_NULL, null=True, blank=True, related_name="sensors"
     )
     location = models.ForeignKey(
-        Location, on_delete=models.SET_NULL, null=True, blank=True
+        Location, on_delete=models.SET_NULL, null=True, blank=True, related_name="sensors"
     )
 
     def __str__(self):
@@ -108,7 +109,7 @@ class Measurement(models.Model):
     )
     value = models.DecimalField(max_digits=10, decimal_places=2)
     timestamp = models.DateTimeField(auto_now_add=True)
-    sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE)
+    sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE, related_name="measurements")
 
     def __str__(self):
         return f"{self.sensor} - {self.timestamp} - {self.value}"
