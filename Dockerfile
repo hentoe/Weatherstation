@@ -20,7 +20,7 @@ RUN python -m venv /py && \
     apk del .tmp-build-deps-cryptography && \
     apk add --update --no-cache jpeg-dev libpq libssl3 && \
     apk add --update --no-cache --virtual .tmp-build-deps \
-        build-base postgresql-dev musl-dev zlib zlib-dev linux-headers libpq-dev python3-dev && \
+        build-base postgresql-dev gettext musl-dev zlib zlib-dev linux-headers libpq-dev python3-dev && \
     /py/bin/pip install -r /tmp/requirements.txt && \
     if [ $DEV = true ]; \
         then /py/bin/pip install -r /tmp/requirements.dev.txt ; \

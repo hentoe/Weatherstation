@@ -12,9 +12,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
+from django.utils.translation import gettext_lazy as _
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -27,7 +28,6 @@ DEBUG = bool(int(os.environ.get("DEBUG", 0)))
 ALLOWED_HOSTS = (
     [] if DEBUG else os.environ.get("DJANGO_ALLOWED_HOSTS").split(",")
 )
-
 
 # CSRF Settings
 CSRF_TRUSTED_ORIGINS = ["https://" + host for host in ALLOWED_HOSTS]
@@ -92,7 +92,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "app.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
@@ -104,7 +103,6 @@ DATABASES = {
         "PASSWORD": os.environ.get("DB_PASS"),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -123,7 +121,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 LANGUAGE_CODE = "en-us"
@@ -135,7 +132,12 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+LANGUAGES = [
+    ("en", _("English")),
+    ("de-de", _("German")),
+]
 
+LOCALES = [str(BASE_DIR / "locale")]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
