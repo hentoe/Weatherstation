@@ -2,28 +2,39 @@
 Tests for the user API.
 """
 
-from django.test import TestCase
+import pytest
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 from django.urls import reverse
-
-from rest_framework.test import APIClient
 from rest_framework import status
+from rest_framework.test import APIClient
 
 CREATE_USER_URL = reverse("user-list")
 LOGIN_URL = reverse("user:knox_login")
 TOKEN_URL = reverse("user:token")
 ME_URL = "/api/users/me/"
 
+User = get_user_model()
+
 
 def create_user(**params):
     """Create and return a new user."""
-    return get_user_model().objects.create_user(**params)
+    return User.objects.create_user(**params)
 
 
-class PublicUserApiTests(TestCase):
+@pytest.fixture
+def api_client():
+    """Fixture to create an API client for testing."""
+    return APIClient()
+
+
+@pytest.mark.django_db
+class TestPublicUserApi:
     """Test the public features of the user API."""
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def setup_client(self):
+        """Fixture to create an API client for testing."""
         self.client = APIClient()
 
     def test_create_user_success(self):
@@ -34,13 +45,14 @@ class PublicUserApiTests(TestCase):
             "re_password": "supersecurepassword123",
             "name": "Test Name",
         }
-        res = self.client.post(CREATE_USER_URL, payload)
+        response = self.client.post(CREATE_USER_URL, payload)
 
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        user = get_user_model().objects.get(email=payload["email"])
-        self.assertTrue(user.check_password(payload["password"]))
-        self.assertNotIn("password", res.data)
-        self.assertEqual(user.name, payload["name"])
+        assert response.status_code == status.HTTP_201_CREATED
+
+        user = User.objects.get(email=payload["email"])
+        assert user.check_password(payload["password"]) is True
+        assert "password" not in response.data
+        assert user.name == payload["name"]
 
     def test_create_user_with_email_exists_error(self):
         """Test error returned if user with email exists."""
@@ -51,9 +63,9 @@ class PublicUserApiTests(TestCase):
         }
         create_user(**payload)
         payload["re_password"] = payload["password"]
-        res = self.client.post(CREATE_USER_URL, payload)
+        response = self.client.post(CREATE_USER_URL, payload)
 
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_password_too_short_error(self):
         """Test an error is returned if password less than 5 chars."""
@@ -63,13 +75,13 @@ class PublicUserApiTests(TestCase):
             "re_password": "test",
             "name": "Test Name",
         }
-        res = self.client.post(CREATE_USER_URL, payload)
+        response = self.client.post(CREATE_USER_URL, payload)
 
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
         user_exists = (
             get_user_model().objects.filter(email=payload["email"]).exists()
         )
-        self.assertFalse(user_exists)
+        assert user_exists == False
 
     def test_create_token_for_user(self):
         """Test generates token for valid credentials."""
@@ -84,11 +96,10 @@ class PublicUserApiTests(TestCase):
             "email": user_details["email"],
             "password": user_details["password"],
         }
-        res = self.client.post(TOKEN_URL, payload)
+        response = self.client.post(TOKEN_URL, payload)
 
-        self.assertIn("token", res.data)
-        self.assertNotIn("expiry", res.data)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        assert "expiry" not in response.data
+        assert response.status_code == status.HTTP_200_OK
 
     def test_create_knox_token_for_user(self):
         """Test generates knox token for valid credentials."""
@@ -103,37 +114,37 @@ class PublicUserApiTests(TestCase):
             "email": user_details["email"],
             "password": user_details["password"],
         }
-        res = self.client.post(LOGIN_URL, payload)
+        response = self.client.post(LOGIN_URL, payload)
 
-        self.assertIn("token", res.data)
-        self.assertIn("expiry", res.data)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        assert "token" in response.data
+        assert "expiry" in response.data
+        assert response.status_code == status.HTTP_200_OK
 
     def test_create_token_bad_credentials(self):
         """Test returns error if credentials are invalid"""
         create_user(email="test@example.com", password="goodpassword")
 
         payload = {"email": "test@example.com", "password": "badpass"}
-        res = self.client.post(LOGIN_URL, payload)
+        response = self.client.post(LOGIN_URL, payload)
 
-        self.assertNotIn("token", res.data)
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        assert "token" not in response.data
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_create_token_blank_password(self):
         """Test posting a blank password returns an error."""
         create_user(email="test@example.com", password="goodpassword")
 
         payload = {"email": "test@example.com", "password": ""}
-        res = self.client.post(LOGIN_URL, payload)
+        response = self.client.post(LOGIN_URL, payload)
 
-        self.assertNotIn("token", res.data)
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        assert "token" not in response.data
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_retrieve_user_unauthorized(self):
         """Test authentication is required for users."""
-        res = self.client.get(ME_URL)
+        response = self.client.get(ME_URL)
 
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 class PrivateUserApiTests(TestCase):
