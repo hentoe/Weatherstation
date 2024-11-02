@@ -81,7 +81,7 @@ class TestPublicUserApi:
         user_exists = (
             get_user_model().objects.filter(email=payload["email"]).exists()
         )
-        assert user_exists == False
+        assert not user_exists
 
     def test_create_token_for_user(self):
         """Test generates token for valid credentials."""
