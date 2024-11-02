@@ -18,16 +18,10 @@ services:
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=changeme
-      - DEBUG=1
-      - VUE_FRONTEND_DOMAIN=${VUE_FRONTEND_DOMAIN}
-      - EMAIL_BACKEND=${EMAIL_BACKEND}
-      - EMAIL_HOST=${EMAIL_HOST}
-      - EMAIL_PORT=${EMAIL_PORT}
-      - EMAIL_USE_SSL=${EMAIL_USE_SSL}
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
-      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
-      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
-      - SERVER_EMAIL=${SERVER_EMAIL}
+      - DJANGO_SECRET_KEY=changeme
+      - DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
+      - DOMAIN=localhost
+      - VUE_FRONTEND_DOMAIN=http://localhost:5173
     depends_on:
       - db
 
