@@ -3,20 +3,17 @@ Views for the weatherstation APIs.
 """
 
 from django.db.models import Max, Exists, OuterRef
-
 from drf_spectacular.utils import (
     extend_schema_view,
     extend_schema,
     OpenApiParameter,
     OpenApiTypes,
 )
+from knox.auth import TokenAuthentication as KnoxTokenAuthentication
 from rest_framework import mixins, status, viewsets
-
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from knox.auth import TokenAuthentication as KnoxTokenAuthentication
 
 from core.models import Location, Measurement, Sensor, SensorType
 from user.authentication import APIKeyAuthentication
@@ -96,20 +93,20 @@ class SensorViewSet(viewsets.ModelViewSet):
                 "start_date",
                 OpenApiTypes.DATETIME,
                 description=(
-                    "Filter measurements after this date and time "
-                    "(YYYY-MM-DD HH:MM:SS). Time zone aware format "
-                    "is recommended (e.g., "
-                    "'2023-08-06 00:00:00+02:00')."
+                        "Filter measurements after this date and time "
+                        "(YYYY-MM-DD HH:MM:SS). Time zone aware format "
+                        "is recommended (e.g., "
+                        "'2023-08-06 00:00:00+02:00')."
                 ),
             ),
             OpenApiParameter(
                 "end_date",
                 OpenApiTypes.DATETIME,
                 description=(
-                    "Filter measurements before this date and time "
-                    "(YYYY-MM-DD HH:MM:SS). Time zone aware format "
-                    "is recommended (e.g., "
-                    "'2023-08-06 00:00:00+02:00')."
+                        "Filter measurements before this date and time "
+                        "(YYYY-MM-DD HH:MM:SS). Time zone aware format "
+                        "is recommended (e.g., "
+                        "'2023-08-06 00:00:00+02:00')."
                 ),
             ),
             OpenApiParameter(
@@ -117,10 +114,10 @@ class SensorViewSet(viewsets.ModelViewSet):
                 OpenApiTypes.INT,
                 enum=[0, 1],
                 description=(
-                    "Return only the latest measurement for each "
-                    "sensor. If used with start_date and end_date, "
-                    "returns the latest measurement within the "
-                    "time range "
+                        "Return only the latest measurement for each "
+                        "sensor. If used with start_date and end_date, "
+                        "returns the latest measurement within the "
+                        "time range "
                 ),
             ),
         ]
@@ -130,7 +127,10 @@ class MeasurementViewSet(viewsets.ModelViewSet):
     """View for managing measurement APIs."""
 
     serializer_class = serializers.MeasurementDetailSerializer
-    queryset = Measurement.objects.select_related("sensor__location", "sensor__sensor_type")
+    queryset = Measurement.objects.select_related(
+        "sensor__location",
+        "sensor__sensor_type"
+    )
     authentication_classes = [APIKeyAuthentication, KnoxTokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -264,7 +264,7 @@ class BaseSensorAttrViewSet(
             raise ValidationError(
                 {
                     "message": "The 'assigned_only'"
-                    " parameter must be an integer."
+                               " parameter must be an integer."
                 }
             )
         assigned_only = bool(int(assigned_only))
