@@ -1,4 +1,5 @@
-from .base import *  # noqa: F403
+# flake8: noqa: F403
+from .base import *
 
 # GENERAL
 # ------------------------------------------------------------------------------
