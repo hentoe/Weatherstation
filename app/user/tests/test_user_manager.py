@@ -33,4 +33,4 @@ class TestUserManager:
             email="test@example.com",
             password="something-r@nd0m!",  # noqa: S106
         )
-        assert user.name is ""
+        assert user.name == ""
