@@ -4,8 +4,8 @@ LABEL maintainer="hentoe"
 # Environment variables
 ENV PYTHONUNBUFFERED 1
 
-COPY ./requirements.txt /tmp/requirements.txt
-COPY ./requirements.dev.txt /tmp/requirements.dev.txt
+COPY ./requirements/base.txt /tmp/base.txt
+COPY ./requirements/dev.txt /tmp/dev.txt
 COPY ./scripts /scripts
 COPY ./app /app
 # Workdir: where commands like python manage.py test are run from
@@ -21,9 +21,9 @@ RUN python -m venv /py && \
     apk add --update --no-cache jpeg-dev libpq libssl3 && \
     apk add --update --no-cache --virtual .tmp-build-deps \
         build-base postgresql-dev gettext musl-dev zlib zlib-dev linux-headers libpq-dev python3-dev && \
-    /py/bin/pip install -r /tmp/requirements.txt && \
+    /py/bin/pip install -r /tmp/base.txt && \
     if [ $DEV = true ]; \
-        then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
+        then /py/bin/pip install -r /tmp/dev.txt ; \
     fi && \
     rm -rf /tmp && \
     apk del .tmp-build-deps && \
