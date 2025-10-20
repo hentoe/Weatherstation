@@ -14,6 +14,12 @@ Educational project to learn building a web app with django.
     docker compose up
 ```
 
+## Run tests
+
+```
+    docker compose run --rm app coverage run -m pytest
+```
+
 ## Frontend
 
 The frontend is built with Vue3 and found in a separate [repository](https://github.com/hentoe/WeatherstationUI).
