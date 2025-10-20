@@ -8,7 +8,7 @@ Educational project to learn building a web app with django.
 - Build the docker image
 - Run the docker container
 
-```
+```bash
     git clone git@github.com:hentoe/Weatherstation.git
     docker compose build
     docker compose up
@@ -16,7 +16,7 @@ Educational project to learn building a web app with django.
 
 ## Run tests
 
-```
+```bash
     docker compose run --rm app coverage run -m pytest
 ```
 
