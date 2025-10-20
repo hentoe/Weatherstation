@@ -8,6 +8,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from core import models
+from core.models import Measurement
 
 
 class UserAdmin(BaseUserAdmin):
@@ -44,10 +45,18 @@ class UserAdmin(BaseUserAdmin):
         }),
     )
 
+@admin.register(Measurement)
+class MeasurementAdmin(admin.ModelAdmin):
+    """
+    Admin view for Measurement model
+    """
+
+    list_display = ["timestamp", "value", "sensor", "user"]
+    readonly_fields = ["timestamp"]
+
 
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Sensor)
-admin.site.register(models.Measurement)
 admin.site.register(models.Location)
 admin.site.register(models.SensorType)
 admin.site.site_url = os.environ.get("VUE_FRONTEND_DOMAIN", "/")
