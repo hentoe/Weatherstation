@@ -45,6 +45,7 @@ class UserAdmin(BaseUserAdmin):
         }),
     )
 
+
 @admin.register(Measurement)
 class MeasurementAdmin(admin.ModelAdmin):
     """
