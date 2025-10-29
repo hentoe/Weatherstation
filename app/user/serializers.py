@@ -29,7 +29,7 @@ class UserSerializer(UserSerializer):
 
     class Meta(UserSerializer.Meta):
         model = get_user_model()
-        fields = ["email", "name"]
+        fields = ["email", "name", "is_staff"]
 
 
 class AuthTokenSerializer(serializers.Serializer):
