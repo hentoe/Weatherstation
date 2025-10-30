@@ -169,6 +169,7 @@ class PrivateUserApiTests(TestCase):
             {
                 "name": self.user.name,
                 "email": self.user.email,
+                "is_staff": self.user.is_staff
             },
         )
 
