@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Test
         run: docker compose run --rm app sh -c "python manage.py wait_for_db && pytest ."
       - name: Lint
