@@ -1,4 +1,4 @@
-FROM python:3.11-alpine3.18
+FROM python:3.14-alpine3.23
 LABEL maintainer="hentoe"
 
 # Environment variables
