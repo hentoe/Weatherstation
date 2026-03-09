@@ -1,6 +1,6 @@
 flake8==7.3.0
 pytest-cov==7.0.0
-django-silk==5.4.3
+django-silk==5.5.0
 django-coverage-plugin==3.2.0
 
 # Testing
