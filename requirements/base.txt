@@ -5,4 +5,4 @@ psycopg[c]==3.3.4
 drf-spectacular==0.30.0
 uwsgi==2.0.31
 django-rest-knox==5.1.0
-djoser==2.3.3
+djoser==2.3.4
