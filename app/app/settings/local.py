@@ -18,10 +18,11 @@ ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = os.environ.get(
-    "DJANGO_EMAIL_BACKEND",
-    default="django.core.mail.backends.console.EmailBackend",
-)
+MAILERS = {
+    "default": {
+        "BACKEND": "django.core.mail.backends.console.EmailBackend",
+    },
+}
 
 # django-silk
 # ------------------------------------------------------------------------------
