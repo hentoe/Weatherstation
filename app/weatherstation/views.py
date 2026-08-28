@@ -195,6 +195,7 @@ class MeasurementViewSet(viewsets.ModelViewSet):
         """Create a new measurement."""
         serializer.save(user=self.request.user)
 
+
 @extend_schema_view(
     list=extend_schema(
         parameters=[
