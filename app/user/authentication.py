@@ -31,7 +31,7 @@ class APIKeyAuthExtension(OpenApiAuthenticationExtension):
     name = "APIKeyAuthentication"
 
     def get_security_definition(self, auto_schema):
-        return {"type": "apiKey", "in": "header", "name": "Authorization"}
+        return {"type": "apiKey", "in": "header", "name": "X-API-Key"}
 
     def get_security_requirements(self, auto_schema):
         return [{self.name: []}]
