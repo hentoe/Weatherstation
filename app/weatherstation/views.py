@@ -10,10 +10,9 @@ from drf_spectacular.utils import (
     OpenApiTypes,
 )
 from knox.auth import TokenAuthentication as KnoxTokenAuthentication
-from rest_framework import mixins, status, viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 
 from core.models import Location, Measurement, Sensor, SensorType
 from user.authentication import APIKeyAuthentication
@@ -195,26 +194,6 @@ class MeasurementViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Create a new measurement."""
         serializer.save(user=self.request.user)
-
-    def update(self, request, *args, **kwargs):
-        """Update a measurement."""
-        for k, v in request.data.items():
-            if k == "sensor":
-                try:
-                    sensor = Sensor.objects.get(id=v)
-                except Sensor.DoesNotExist:
-                    return Response(
-                        f'Invalid pk "{v}" - Object does not exist.',
-                        status.HTTP_400_BAD_REQUEST,
-                    )
-                if sensor.user != request.user:
-                    return Response(
-                        f'Invalid pk "{v}" - Object does not exist.',
-                        status.HTTP_400_BAD_REQUEST,
-                    )
-
-        return super().update(request, *args, **kwargs)
-
 
 @extend_schema_view(
     list=extend_schema(

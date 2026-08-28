@@ -147,6 +147,23 @@ class PrivateMeasurementAPITests(TestCase):
 
         self.assertEqual(measurement.user, self.user)
 
+    def test_create_with_other_users_sensor_returns_error(self):
+        """Test a measurement cannot be created for another user's sensor."""
+        other_user = create_user(
+            email="user2@example.com", password="sdklfjölohj"
+        )
+        other_sensor = create_sensor(user=other_user)
+
+        res = self.client.post(
+            MEASUREMENTS_URL,
+            {"value": Decimal("23.5"), "sensor": other_sensor.id},
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(
+            Measurement.objects.filter(user=self.user, sensor=other_sensor).exists()
+        )
+
     def test_partial_update(self):
         """Test partial update of a measurement."""
         original_value = Decimal("15.0")
