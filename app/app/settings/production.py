@@ -14,6 +14,7 @@ def _environment_flag(name):
 REQUIRED_ENVIRONMENT_VARIABLES = (
     "DJANGO_SECRET_KEY",
     "DJANGO_ALLOWED_HOSTS",
+    "PUBLIC_HTTPS",
     "VUE_FRONTEND_ORIGINS",
     "DB_HOST",
     "DB_NAME",
@@ -49,7 +50,15 @@ if _environment_flag("EMAIL_USE_TLS") and _environment_flag("EMAIL_USE_SSL"):
 DEBUG = False
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-if _environment_flag("SSL"):
+if _environment_flag("PUBLIC_HTTPS"):
+    CSRF_TRUSTED_ORIGINS = list(  # noqa: F405
+        dict.fromkeys(
+            [
+                *CSRF_TRUSTED_ORIGINS,  # noqa: F405
+                *[f"https://{host}" for host in ALLOWED_HOSTS if host != "*"],  # noqa: F405
+            ]
+        )
+    )
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
