@@ -161,7 +161,10 @@ class PrivateMeasurementAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(
-            Measurement.objects.filter(user=self.user, sensor=other_sensor).exists()
+            Measurement.objects.filter(
+                user=self.user,
+                sensor=other_sensor
+            ).exists()
         )
 
     def test_partial_update(self):

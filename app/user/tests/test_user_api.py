@@ -196,7 +196,9 @@ class AuthenticationSchemaTests(TestCase):
 
     def test_api_key_uses_x_api_key_header(self):
         """Test the API key schema matches the authentication backend."""
-        definition = APIKeyAuthExtension(APIKeyAuthentication).get_security_definition(
+        definition = APIKeyAuthExtension(
+            APIKeyAuthentication
+        ).get_security_definition(
             None
         )
 
