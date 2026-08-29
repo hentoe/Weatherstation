@@ -11,34 +11,28 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
 from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", "changeme")
+def environment_list(name, default=""):
+    """Return a comma-separated environment variable as a clean list."""
+    value = os.environ.get(name, default)
+    return [item.strip() for item in value.split(",") if item.strip()]
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(int(os.environ.get("DEBUG", 0)))
 
-ALLOWED_HOSTS = (
-    [] if DEBUG else os.environ.get("DJANGO_ALLOWED_HOSTS").split(",")
+# Environment-specific modules replace this development-only fallback.
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "unsafe-development-key")
+DEBUG = False
+ALLOWED_HOSTS = environment_list("DJANGO_ALLOWED_HOSTS")
+FRONTEND_ORIGINS = environment_list(
+    "VUE_FRONTEND_ORIGINS", os.environ.get("VUE_FRONTEND_DOMAIN", "")
 )
-
-# CSRF Settings
-CSRF_TRUSTED_ORIGINS = ["https://" + host for host in ALLOWED_HOSTS]
-CORS_ALLOWED_ORIGINS = (
-    [
-        "http://localhost:5173",
-        "http://127.0.0.1:8000",
-    ]  # Changeme to env variable
-    if DEBUG
-    else os.environ.get("VUE_FRONTEND_DOMAIN").split(",")
-)
+CORS_ALLOWED_ORIGINS = FRONTEND_ORIGINS
+CSRF_TRUSTED_ORIGINS = FRONTEND_ORIGINS
 
 # Application definition
 
@@ -137,7 +131,7 @@ LANGUAGES = [
     ("de-de", _("German")),
 ]
 
-LOCALES = [str(BASE_DIR / "locale")]
+LOCALE_PATHS = [str(BASE_DIR / "locale")]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -168,11 +162,8 @@ SPECTACULAR_SETTINGS = {
     ),
 }
 
-# Domain for djoser emails
-# Get rid of http:// or https:// from the env variable, as it is already part of the email template
-DOMAIN = os.environ.get("VUE_FRONTEND_DOMAIN", "localhost:8000").split("://")[
-    -1
-]
+# Domain for djoser emails. The first configured frontend origin is canonical.
+DOMAIN = urlparse(FRONTEND_ORIGINS[0]).netloc if FRONTEND_ORIGINS else "localhost:8000"
 # Djoser settings
 DJOSER = {
     "PASSWORD_RESET_CONFIRM_URL": "password/reset/confirm/?uid={uid}&token={token}",
