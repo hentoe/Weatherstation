@@ -26,7 +26,9 @@ REQUIRED_ENVIRONMENT_VARIABLES = (
     "DEFAULT_FROM_EMAIL",
     "SERVER_EMAIL",
 )
-missing = [name for name in REQUIRED_ENVIRONMENT_VARIABLES if not os.environ.get(name)]
+missing = [
+    name for name in REQUIRED_ENVIRONMENT_VARIABLES if not os.environ.get(name)
+]
 if missing:
     raise ImproperlyConfigured(
         "Missing required production environment variables: " + ", ".join(missing)
