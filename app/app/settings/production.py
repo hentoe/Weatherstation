@@ -36,7 +36,8 @@ if missing:
     )
 
 if not all(  # noqa: F405
-    origin.startswith(("http://", "https://")) for origin in FRONTEND_ORIGINS
+    origin.startswith(("http://", "https://"))
+    for origin in FRONTEND_ORIGINS  # noqa: F405
 ):
     raise ImproperlyConfigured(
         "VUE_FRONTEND_ORIGINS entries must include http:// or https://."
