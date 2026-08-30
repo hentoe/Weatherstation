@@ -26,20 +26,26 @@ REQUIRED_ENVIRONMENT_VARIABLES = (
     "DEFAULT_FROM_EMAIL",
     "SERVER_EMAIL",
 )
-missing = [name for name in REQUIRED_ENVIRONMENT_VARIABLES if not os.environ.get(name)]
+missing = [
+    name for name in REQUIRED_ENVIRONMENT_VARIABLES if not os.environ.get(name)
+]
 if missing:
     raise ImproperlyConfigured(
-        "Missing required production environment variables: " + ", ".join(missing)
+        "Missing required production environment variables: "
+        + ", ".join(missing)
     )
 
-if not all(origin.startswith(("http://", "https://")) for origin in FRONTEND_ORIGINS):  # noqa: F405
+if not all(  # noqa: F405
+    origin.startswith(("http://", "https://")) for origin in FRONTEND_ORIGINS
+):
     raise ImproperlyConfigured(
         "VUE_FRONTEND_ORIGINS entries must include http:// or https://."
     )
 
 if any("://" in host or "/" in host for host in ALLOWED_HOSTS):  # noqa: F405
     raise ImproperlyConfigured(
-        "DJANGO_ALLOWED_HOSTS entries must be hostnames without a scheme or path."
+        "DJANGO_ALLOWED_HOSTS entries must be hostnames without a scheme "
+        "or path."
     )
 
 if _environment_flag("EMAIL_USE_TLS") and _environment_flag("EMAIL_USE_SSL"):
@@ -55,7 +61,11 @@ if _environment_flag("PUBLIC_HTTPS"):
         dict.fromkeys(
             [
                 *CSRF_TRUSTED_ORIGINS,  # noqa: F405
-                *[f"https://{host}" for host in ALLOWED_HOSTS if host != "*"],  # noqa: F405
+                *[
+                    f"https://{host}"
+                    for host in ALLOWED_HOSTS  # noqa: F405
+                    if host != "*"
+                ],
             ]
         )
     )
