@@ -9,6 +9,8 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from user.authentication import APIKeyAuthExtension, APIKeyAuthentication
+
 CREATE_USER_URL = reverse("user-list")
 LOGIN_URL = reverse("user:knox_login")
 TOKEN_URL = reverse("user:token")
@@ -187,3 +189,17 @@ class PrivateUserApiTests(TestCase):
         self.user.refresh_from_db()
         self.assertEqual(self.user.name, payload["name"])
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+
+class AuthenticationSchemaTests(TestCase):
+    """Test authentication details exposed through the OpenAPI schema."""
+
+    def test_api_key_uses_x_api_key_header(self):
+        """Test the API key schema matches the authentication backend."""
+        definition = APIKeyAuthExtension(
+            APIKeyAuthentication
+        ).get_security_definition(
+            None
+        )
+
+        self.assertEqual(definition["name"], "X-API-Key")

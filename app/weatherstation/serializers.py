@@ -101,6 +101,13 @@ class SensorDetailSerializer(SensorSerializer):
 class MeasurementSerializer(serializers.ModelSerializer):
     """Serializer for Measurements."""
 
+    def validate_sensor(self, sensor):
+        """Only allow measurements for a sensor owned by the requester."""
+        request = self.context.get("request")
+        if request and sensor.user_id != request.user.id:
+            raise serializers.ValidationError("Invalid sensor.")
+        return sensor
+
     class Meta:
         model = Measurement
         fields = ["id", "sensor", "timestamp", "value"]
