@@ -1,8 +1,8 @@
 Django==6.1.2
-djangorestframework==3.18.1
+djangorestframework==3.18.3
 django-cors-headers==4.9.0
 psycopg[c]==3.3.6
 drf-spectacular==0.30.0
 uwsgi==2.0.31
 django-rest-knox==5.1.0
-djoser==2.3.4
+djoser==2.3.5
